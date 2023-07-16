@@ -100,6 +100,14 @@ resource "vsphere_virtual_machine" "etcd01" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_etcd01}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd01}
+    EOF
+  }
+
 }
 
 ## Deployment of VM from Remote OVF
@@ -156,6 +164,14 @@ resource "vsphere_virtual_machine" "etcd02" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_etcd02}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd02}
+    EOF
+  }
+
 }
 
 ## Deployment of VM from Remote OVF
@@ -212,6 +228,14 @@ resource "vsphere_virtual_machine" "etcd03" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_etcd03}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd03}
+    EOF
+  }
+
 }
 
 ## Deployment of VM from Remote OVF
@@ -268,6 +292,14 @@ resource "vsphere_virtual_machine" "master01" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_master01}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master01}
+    EOF
+  }
+
 }
 
  
@@ -325,6 +357,14 @@ resource "vsphere_virtual_machine" "master02" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_master02}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master02}
+    EOF
+  }
+
 }
   
 ## Deployment of VM from Remote OVF
@@ -381,6 +421,14 @@ resource "vsphere_virtual_machine" "master03" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_master03}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master03}
+    EOF
+  }
+
 }
 
 ## Deployment of VM from Remote OVF
@@ -437,6 +485,14 @@ resource "vsphere_virtual_machine" "worker01" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_worker01}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker01}
+    EOF
+  }
+
 }
 
 
@@ -494,6 +550,14 @@ resource "vsphere_virtual_machine" "worker02" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_worker02}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker02}
+    EOF
+  }
+
 }
 
 ## Deployment of VM from Remote OVF
@@ -550,4 +614,12 @@ resource "vsphere_virtual_machine" "worker03" {
     ]
 
   } 
+
+  provisioner "local-exec" {
+    command = <<EOF
+      ssh-keygen -R ${var.guest_host_worker03}
+      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker03}
+    EOF
+  }
+
 }
