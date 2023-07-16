@@ -155,29 +155,3 @@
         chdir: $HOME
       register: joined_result
       changed_when: "'This node has joined the cluster' in joined_result.stdout"
-
-- name: copying kubeconfig from master01 to controller 
-  hosts: localhost
-  become: yes
-  tasks:
-    - name: copying kubeconfig from master01 to controller 
-      become: yes
-      file:
-        path: $HOME/.kube
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: '0755'
-
-    - name: copy file admin.conf
-      become: yes
-      fetch:
-        src: /etc/kubernetes/admin.conf
-        dest: $HOME/.kube/config
-        remote_src: yes
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: '0755'
-
-
-    

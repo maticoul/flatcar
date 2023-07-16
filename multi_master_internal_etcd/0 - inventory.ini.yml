@@ -59,6 +59,8 @@ ansible_user=securiport
 subnet=192.168.40.0/24
 nfs-folder=/mnt/nfs-server/
 samba-folder=/srv/samba/file-loader
+nfs=192.168.40.51
+smb=192.168.40.50
 
 #[webservers]
 #alpha.example.org
