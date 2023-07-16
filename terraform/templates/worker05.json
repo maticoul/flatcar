@@ -1,0 +1,28 @@
+{
+    "ignition":{
+        "version":"3.3.0"
+        },
+    "passwd":{
+        "users":[
+            {
+          "groups":["sudo","docker"],
+          "name":"securiport",
+          "passwordHash":"$1$KrP.Y6l1$2XOYtM7v54BvYYuHM56Ls.",
+          "sshAuthorizedKeys":[
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQmZUOhMFAffqA0W/FyMUCehb8OV0oa8krPm7AmWbWlTJN2S5jr6aqjJxdjQaOMvxcgJSxiUGmfJOHpca9lJ1/bA6ipff4NCKM5lzLIwM860D+kXbnSRXun1FTDYjGRQwo13JaMR2BC/twOGA+36XyUXybszzOAmoc32cXQ9u1YwcYFQ5i8zvBTZLl/1H5aqV/KlWn3jJqeVNQp9n0K/2uLK9TLZI6wjqeMUUgYcPXGCqeh2IzxiZ0PyCmEi9UbY4tF13vr/sTTixv4D3LRBYYMYYmKpirh5saQYxAMwEO7wJm64Fpw4iKKNtHVuvEGsL7Qj8xVIX2IxiQ+NwPwjMMofsfauoZEDeJS8pGMGDajwZtVwBirFu/kgoHowtsbhrGXPrV8HkIlKcjABC11nYaDJo4bdB8+91zpju9PnLzAEwdWLHyIUn5ECiVbbYk8KLSYyfPuvnnotLUtM7g/gagV20FEKv2ABup5BQTHXkLXS/JsyPpY1KLoIpwtOl/PVE= mgt@controller"],
+            "shell":"/bin/bash"}]},
+    "storage":{
+        "files":[
+     {
+           "path":"/etc/systemd/network/10-ens3.network",
+           "contents":{
+             "compression":"",
+             "source":"data:,%5BMatch%5D%0AName%3Dens192%0A%0A%5BNetwork%5D%0AAddress%3D172.25.100.45%0AGateway%3D172.25.100.1%0ADNS%3D8.8.8.8%0A"}},
+            {
+           "path":"/etc/hostname",
+           "contents":{
+             "compression":"",
+             "source":"data:,worker05"}}
+           ]
+           }
+        }
