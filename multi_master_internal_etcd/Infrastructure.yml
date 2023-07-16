@@ -39,7 +39,7 @@
         content: |
           [file-loader]
               comment = Ubuntu File Server Share
-              path = /srv/samba/file-loader
+              path = {{ samba-folder }}
               browsable = yes
               guest ok = yes
               read only = no
@@ -58,7 +58,7 @@
   tasks:
     - name: creating nfs directory
       file:
-        path: /mnt/nfs-server/
+        path: {{ nfs-folder }}
         owner: nobody
         group: nogroup
         state: directory
@@ -77,7 +77,7 @@
         line: "{{ item }}"
         state: present
       with_items:
-        - "{{ shared }} {{ subnet }}(rw,sync,no_subtree_check)"
+        - "{{ nfs-folder }} {{ subnet }}(rw,sync,no_subtree_check)"
       notify:
         - Restart NFS server
 

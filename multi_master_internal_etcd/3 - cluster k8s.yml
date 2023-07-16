@@ -30,7 +30,10 @@
 
     - name: kubeadm init --config kubeadm-config.yaml
       become: yes
-      shell: kubeadm init --config /home/{{ ansible_user }}/kubeadm-config.yaml --upload-certs
+      shell: "kubeadm init --config /home/{{ ansible_user }}/kubeadm-config.yaml --upload-certs >> first-master-joined.txt"
+      args:
+        chdir: $HOME
+        creates: first-master-joined.txt
 
     - name: creating .kube directory
       become: yes
@@ -118,19 +121,14 @@
       become: yes
       shell : kubectl apply -f /home/{{ ansible_user }}/high-availability-1.21+.yaml
 
-    - name: archive of kubernetes directory 
-      archive:
-        path: /etc/kubernetes/
-        dest: /tmp/master01_kubernetes.tar
-        remote_src: yes
+    - name: get join command for masters
+      shell: sed -n '72,74p' $HOME/first-master-joined.txt
+      register: join_masters
+    - name: set join command
+      set_fact:
+        join_masters: "{{ join_masters.stdout | replace('\\\n\t', '') }}"
 
-    - name: Copy the archive of Kubernetes directory to controller
-      fetch:
-        src: /tmp/master01_kubernetes.tar
-        dest: /tmp/master01_kubernetes.tar
-        flat: yes
-
-    - name: get join command
+    - name: get join command for workers
       shell: kubeadm token create --print-join-command
       register: join_command_raw
 
@@ -138,66 +136,48 @@
       set_fact:
         join_command: "{{ join_command_raw.stdout_lines[0] }}"
 
-- name: pki directory
+- name: Join other masters
   hosts: masters !master01
   become: yes
   tasks:
-    - name: creating kubernetes directory
-      file:
-        path: /etc/kubernetes/
-        state: directory
-        mode: '0755'
+    - name: Join other masters to the cluster
+      shell: "{{ hostvars['master01'].join_masters }}  --ignore-preflight-errors all"
+      register: join_result
+      changed_when: "'This node has joined the cluster' in join_result.stdout"
 
-    - name: Copy the archive of Kubernetes directory to masters
-      copy:
-        src: /tmp/master01_kubernetes.tar
-        dest: /home/{{ ansible_user }}/
-        remote_src: yes
-    
-    - name: Extract the archive files in kubernetes
-      unarchive:
-        src:  /home/{{ ansible_user }}/master01_kubernetes.tar
-        dest: /etc/kubernetes/
-
-    - name: find non-reusable certificates insite /etc/kubernetes/pki
-      find:
-        paths: /etc/kubernetes/
-        patterns: "*"
-        recurse: yes
-        file_type: file
-        includes:
-          - apiserver-etcd-client.crt
-          - apiserver-etcd-client.key
-          - ca.crt
-          - ca.key
-          - sa.key
-          - sa.pub
-          - front-proxy-ca.crt
-          - front-proxy-ca.key
-          - admin.conf
-      register: files_to_delete
-
-    - name: cleanup non-reusable certificates insite /etc/kubernetes/pki
-      file:
-        path: "{{ item.path }}"
-        state: absent
-      with_items: "{{ files_to_delete.files }}"
-
-    - name: change pki groupe own
-      file:
-        path: /etc/kubernetes/pki
-        owner: root
-        group: root
-        mode: '0755'
-
-    - name: join cluster
-      shell: "{{ hostvars['master01'].join_command }} --control-plane  --ignore-preflight-errors all  >> masters_joined.txt"
-      
 - name: Join workers
   hosts: workers
   become: yes
   tasks:
     - name: join cluster
       shell: "{{ hostvars['master01'].join_command }} --ignore-preflight-errors all  >> masters_joined.txt"
+      args:
+        chdir: $HOME
+      register: joined_result
+      changed_when: "'This node has joined the cluster' in joined_result.stdout"
+
+- name: copying kubeconfig from master01 to controller 
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: copying kubeconfig from master01 to controller 
+      become: yes
+      file:
+        path: $HOME/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: copy file admin.conf
+      become: yes
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
 
     

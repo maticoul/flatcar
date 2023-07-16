@@ -16,26 +16,21 @@
 #192.168.100.10
 
 # Ex 2=A collection of hosts belonging to the 'webservers' group
-
 [kubernetes]
-master01 ansible_host=master01 
+master01 ansible_host=master01
 master02 ansible_host=master02    
 master03 ansible_host=master02    
 worker01 ansible_host=worker01    
 worker02 ansible_host=worker02   
 worker03 ansible_host=worker03 
-
-
 [masters]
 master01 ansible_host=master01    
 master02 ansible_host=master02    
 master03 ansible_host=master03    
-
 [workers]
 worker01 ansible_host=worker01   
 worker02 ansible_host=worker02    
 worker03 ansible_host=worker03    
-
 [infrastructure]
 haproxy ansible_host=haproxy   
 nfs-srv ansible_host=nfs-srv    
@@ -56,8 +51,14 @@ podSubnet=192.168.0.0/16
 ansible_user=securiport
 subnet=192.168.40.0/24
 shared=/mnt/nfs-server/
-#ansible_password=Securiport
-
+server1=192.168.40.80
+server1=192.168.40.81
+server1=192.168.40.82
+ansible_password=Securiport
+ansible_user=securiport
+subnet=192.168.40.0/24
+nfs-folder=/mnt/nfs-server/
+samba-folder=/srv/samba/file-loader
 
 #[webservers]
 #alpha.example.org
