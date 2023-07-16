@@ -36,21 +36,22 @@
         url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
         dest: /usr/local/bin
         mode: 0755
-    - name: unzip cni plugins
+
+    - name: unzip helm
       become: yes
       unarchive:
         src: /usr/local/bin/helm-v3.12.2-linux-amd64.tar.gz.asc
         dest: /usr/local/bin/
         remote_src: yes
     
-    - name: Download nano using get_url
+    - name: Downloading helmfile using get_url
       become: yes
       get_url:
         url: https://github.com/helmfile/helmfile/releases/download/v0.155.0/helmfile_0.155.0_linux_amd64.tar.gz
         dest: /usr/bin
         mode: 0755
 
-    - name: unzip cni plugins
+    - name: unzip helmfile
       become: yes
       unarchive:
         src: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
@@ -60,20 +61,20 @@
     - name: installing helmfile plugin 
       shell: helm plugin install https://github.com/databus23/helm-diff
 
-    - name: get join command for workers
+    - name: creating ns apis
       shell: kubectl create ns apis
 
-    - name: get join command for workers
+    - name: creating smbcreds
       shell: kubectl create secret generic smbcreds --from-literal=username={{ ansible_user }} --from-literal=password={{ ansible_password }} -n apis
 
-    - name: get join command for workers
+    - name: adding csi driver nfs repo
       shell: helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
 
-    - name: get join command for workers
+    - name: installing csi driver nfs
       shell: helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server={{ nfs }} --set nfs.path={{ nfs-folder }}/ -n kube-system
 
-    - name: get join command for workers
+    - name: adding csi driver smb repo
       shell: helm repo add csi-driver-smb https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
 
-    - name: get join command for workers
+    - name: installing csi driver smb
       shell: helm install csi-driver-smb csi-driver-smb/csi-driver-smb -n kube-system --version v1.11.0

@@ -32,7 +32,6 @@ smb-srv ansible_host=smb-srv    ansible_python_interpreter=/usr/bin/python
 [all:vars]
 ansible_become=true
 ansible_python_interpreter=/opt/bin/python/bin/pypy
-controlPlaneEndpoint=192.168.40.51
 clusterName=lab-cluster
 CNI_VERSION=v1.3.0
 CRICTL_VERSION=v1.26.0
