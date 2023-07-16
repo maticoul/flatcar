@@ -29,6 +29,12 @@ variable "deploy_vsphere_datastore" {
   description = "Datastore in which the virtual machine will be deployed."
 }
 
+##### Guest
+# - Describes virtual machine / guest options
+
+variable "guest_name_prefix" {
+  description = "VM / hostname prefix for the kubernetes cluster."
+}
 #variable "deploy_vsphere_folder" {
 #  description = "The path to the folder to put this virtual machine in, relative to the datacenter that the resource pool is in."
 #}

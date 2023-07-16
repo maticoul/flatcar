@@ -48,7 +48,7 @@ data "vsphere_network" "network" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "etcd01" {
-  name                 = "etcd01"
+  name                 = "${var.guest_name_prefix}-etcd01"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -104,7 +104,7 @@ resource "vsphere_virtual_machine" "etcd01" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "etcd02" {
-  name                 = "etcd02"
+  name                 = "${var.guest_name_prefix}-etcd02"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -160,7 +160,7 @@ resource "vsphere_virtual_machine" "etcd02" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "etcd03" {
-  name                 = "etcd03"
+  name                 = "${var.guest_name_prefix}-etcd03"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -216,7 +216,7 @@ resource "vsphere_virtual_machine" "etcd03" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "master01" {
-  name                 = "master01"
+  name                 = "${var.guest_name_prefix}-master01"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -273,7 +273,7 @@ resource "vsphere_virtual_machine" "master01" {
  
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "master02" {
-  name                 = "master02"
+  name                 = "${var.guest_name_prefix}-master02"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -329,7 +329,7 @@ resource "vsphere_virtual_machine" "master02" {
   
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "master03" {
-  name                 = "master03"
+  name                 = "${var.guest_name_prefix}-master03"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -385,7 +385,7 @@ resource "vsphere_virtual_machine" "master03" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "worker01" {
-  name                 = "worker01"
+  name                 = "${var.guest_name_prefix}-worker01"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -442,7 +442,7 @@ resource "vsphere_virtual_machine" "worker01" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "worker02" {
-  name                 = "worker02"
+  name                 = "${var.guest_name_prefix}-worker02"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket
@@ -498,7 +498,7 @@ resource "vsphere_virtual_machine" "worker02" {
 
 ## Deployment of VM from Remote OVF
 resource "vsphere_virtual_machine" "worker03" {
-  name                 = "worker03"
+  name                 = "${var.guest_name_prefix}-worker03"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
   num_cores_per_socket = var.guest_num_cores_per_socket

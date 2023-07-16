@@ -12,6 +12,7 @@ deploy_vsphere_host       = "172.25.100.13"
 
 # Guest
 #guest_vsphere_network = "VM Network"
+guest_name_prefix     = "k8s-prod"
 guest_num_cores_per_socket    = "3"
 guest_num_cpus        = "6"
 guest_memory          = "4096"
