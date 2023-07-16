@@ -32,9 +32,9 @@ worker01 ansible_host=worker01
 worker02 ansible_host=worker02    
 worker03 ansible_host=worker03    
 [infrastructure]
-haproxy ansible_host=haproxy   
-nfs-srv ansible_host=nfs-srv    
-smb-srv ansible_host=smb-srv
+haproxy ansible_host=haproxy   ansible_python_interpreter=/usr/bin/python
+nfs-srv ansible_host=nfs-srv   ansible_python_interpreter=/usr/bin/python
+smb-srv ansible_host=smb-srv   ansible_python_interpreter=/usr/bin/python
 
 [all:vars]
 ansible_become=true
