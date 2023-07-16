@@ -2,7 +2,6 @@
 - name: Install HAProxy
   hosts: haproxy
   become: yes
-
   tasks:
     - name: Install HAProxy package
       apt:
@@ -18,6 +17,7 @@
         owner: root
         group: root
         mode: '0644'
+        remote_src: yes
       become: yes
 
     - name: Restart HAProxy service
@@ -25,7 +25,7 @@
         name: haproxy
         state: restarted
       become: yes
-#---
+
 - name: Install and configure Samba
   hosts: smb-srv
   become: yes
@@ -51,7 +51,7 @@
       service:
         name: smbd
         state: restarted
-#---
+
 - name: Install NFS server
   hosts: nfs-srv
   become: true
