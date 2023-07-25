@@ -22,54 +22,16 @@ master02 ansible_host=master02
 master03 ansible_host=master02    
 worker01 ansible_host=worker01    
 worker02 ansible_host=worker02   
-worker03 ansible_host=worker03
-etcd01 ansible_host=etcd01
-etcd02 ansible_host=etcd02
-etcd03 ansible_host=etcd03
-[masters]
-master01 ansible_host=master01    
-master02 ansible_host=master02    
-master03 ansible_host=master03    
-[workers]
-worker01 ansible_host=worker01   
-worker02 ansible_host=worker02    
-worker03 ansible_host=worker03
-[etcd]
-etcd01 ansible_host=etcd01
-etcd02 ansible_host=etcd02
-etcd03 ansible_host=etcd03
+worker03 ansible_host=worker03 
+  
 [infrastructure]
 haproxy ansible_host=haproxy   ansible_python_interpreter=/usr/bin/python
-nfs-srv ansible_host=nfs-srv   ansible_python_interpreter=/usr/bin/python
-smb-srv ansible_host=smb-srv   ansible_python_interpreter=/usr/bin/python
-
 [all:vars]
 ansible_become=true
 ansible_python_interpreter=/opt/bin/python/bin/pypy
-controlPlaneEndpoint=192.168.40.51
-clusterName=lab-cluster
-CNI_VERSION=v1.3.0
-CRICTL_VERSION=v1.26.0
-RELEASE_VERSION=v0.15.1
-DOWNLOAD_DIR=/opt/bin
 RELEASE=v1.26.5
-cidr=192.168.0.0/16
-podSubnet=192.168.0.0/16
 ansible_user=securiport
-subnet=192.168.40.0/24
-shared=/mnt/nfs-server/
-server1=192.168.40.80
-server1=192.168.40.81
-server1=192.168.40.82
 ansible_password=Securiport
-ansible_user=securiport
-subnet=192.168.40.0/24
-nfs-folder=/mnt/nfs-server/
-samba-folder=/srv/samba/file-loader
-nfs=192.168.40.51
-smb=192.168.40.50
-my_username=maticoulibaly
-my_password=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
 
 #[webservers]
 #alpha.example.org

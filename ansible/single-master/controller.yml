@@ -31,6 +31,12 @@
         state: present
       become: yes
       become_method: sudo
+ 
+    - name: Downloading kubelet
+      get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '/usr/local/bin/'
+        mode: '+x'
 
     - name: installing helm 
       become: yes

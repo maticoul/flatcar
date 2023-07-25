@@ -38,6 +38,14 @@
         url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
         dest: /usr/local/bin
         mode: 0755
+
+    - name: Downloading kubectl
+      become: yes
+      get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '/usr/local/bin/'
+        mode: '+x'
+
     - name: unzip helm
       become: yes
       unarchive:
