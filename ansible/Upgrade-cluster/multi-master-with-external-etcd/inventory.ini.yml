@@ -23,6 +23,7 @@ master03 ansible_host=master02
 worker01 ansible_host=worker01    
 worker02 ansible_host=worker02   
 worker03 ansible_host=worker03
+[etcd]
 etcd01 ansible_host=etcd01
 etcd02 ansible_host=etcd02
 etcd03 ansible_host=etcd03  
@@ -31,11 +32,12 @@ haproxy ansible_host=haproxy   ansible_python_interpreter=/usr/bin/python
 [all:vars]
 ansible_become=true
 ansible_python_interpreter=/opt/bin/python/bin/pypy
-RELEASE=v1.26.5
+RELEASE=v1.27.4
 ansible_user=securiport
 ansible_password=Securiport
 my_username=maticoulibaly
 my_password=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
+DOWNLOAD_DIR=/opt/bin
 
 #[webservers]
 #alpha.example.org

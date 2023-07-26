@@ -16,16 +16,68 @@
         mode: '+x'
      delegate_to: master01
 
-   - name: Downloading kubelet
+   - name: upgrade apply
      become: yes
-     shell: |
-       sudo kubeadm upgrade apply {{ RELEASE }}
-       sudo kubeadm upgrade node
-       sudo kubeadm upgrade apply
+     shell: kubeadm upgrade apply {{ RELEASE }} -y
      delegate_to: master01
 
 - name: Download kubeadm from storage.googleapis.com
-  hosts: kubernetes
+  hosts: etcd
+  tasks:
+   - name: Downloading kubectl
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+
+   - name: Downloading kubeadm
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+
+   - name: running sysctl daemon-reload command
+     become: yes
+     command:
+       cmd: systemctl daemon-reload
+
+   - name: running restart kubelet command
+     become: yes
+     command:
+       cmd: systemctl restart kubelet
+
+   - name: Downloading kubeadm
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+     delegate_to: master01
+
+   - name: Downloading kubeadm
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+     delegate_to: master01
+
+   - name: running sysctl daemon-reload command
+     become: yes
+     command:
+       cmd: systemctl daemon-reload
+     delegate_to: master01
+
+   - name: running restart kubelet command
+     become: yes
+     command:
+       cmd: systemctl restart kubelet
+     delegate_to: master01
+
+- name: Download kubeadm from storage.googleapis.com
+  hosts: kubernetes !master01
   tasks:
    - name: Downloading kubelet
      get_url:
