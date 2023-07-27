@@ -1,5 +1,5 @@
-- name: Download kubeadm from storage.googleapis.com
-  hosts: haproxy
+- name: Download kubectl from storage.googleapis.com
+  hosts: master
   tasks:
    - name: Downloading kubectl
      become: yes
@@ -14,26 +14,51 @@
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
         dest: '{{ DOWNLOAD_DIR }}'
         mode: '+x'
-     delegate_to: master01
+     delegate_to: master
+
+   - name: upgrade apply
+     become: yes
+     shell: kubeadm upgrade apply {{ RELEASE }} -y
+     delegate_to: master
 
    - name: Downloading kubelet
      become: yes
-     shell: |
-       sudo kubeadm upgrade apply {{ RELEASE }}
-       sudo kubeadm upgrade node
-       sudo kubeadm upgrade apply
-     delegate_to: master01
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+     delegate_to: master
+
+   - name: Downloading kubectl
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+     delegate_to: master
+
+   - name: running sysctl daemon-reload command
+     become: yes
+     command:
+       cmd: systemctl daemon-reload
+     delegate_to: master
+
+   - name: running restart kubelet command
+     become: yes
+     command:
+       cmd: systemctl restart kubelet
+     delegate_to: master
 
 - name: Download kubeadm from storage.googleapis.com
-  hosts: kubernetes
+  hosts: workers
   tasks:
-   - name: Downloading kubelet
+   - name: Downloading kubeadm
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
         dest: '{{ DOWNLOAD_DIR }}'
         mode: '+x'
 
-   - name: Downloading kubelet
+   - name: Downloading kubectl
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
         dest: '{{ DOWNLOAD_DIR }}'

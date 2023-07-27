@@ -16,12 +16,9 @@
 #192.168.100.10
 
 # Ex 2=A collection of hosts belonging to the 'webservers' group
-[kubernetes]
-master01 ansible_host=master   
-worker01 ansible_host=worker01    
-worker02 ansible_host=worker02   
-worker03 ansible_host=worker03   
-[workers]
+
+master ansible_host=master   
+[workers] 
 worker01 ansible_host=worker01   
 worker02 ansible_host=worker02    
 worker03 ansible_host=worker03    

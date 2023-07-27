@@ -1,4 +1,4 @@
-- name: Download kubeadm from storage.googleapis.com
+- name: Download kubectl from storage.googleapis.com
   hosts: haproxy
   tasks:
    - name: Downloading kubectl
@@ -48,7 +48,7 @@
      command:
        cmd: systemctl restart kubelet
 
-   - name: Downloading kubeadm
+   - name: Downloading kubelet
      become: yes
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
@@ -56,7 +56,7 @@
         mode: '+x'
      delegate_to: master01
 
-   - name: Downloading kubeadm
+   - name: Downloading kubectl
      become: yes
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
@@ -79,13 +79,13 @@
 - name: Download kubeadm from storage.googleapis.com
   hosts: kubernetes !master01
   tasks:
-   - name: Downloading kubelet
+   - name: Downloading kubeadm
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
         dest: '{{ DOWNLOAD_DIR }}'
         mode: '+x'
 
-   - name: Downloading kubelet
+   - name: Downloading kubectl
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
         dest: '{{ DOWNLOAD_DIR }}'
