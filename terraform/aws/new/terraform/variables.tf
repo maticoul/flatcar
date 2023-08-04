@@ -68,7 +68,7 @@ variable amis {
   }
 }
 variable default_instance_user {
-  default = "securiport"
+  default = "username"
 }
 
 variable etcd_instance_type {
