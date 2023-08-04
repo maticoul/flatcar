@@ -1,14 +1,14 @@
 # Provider
-provider_vsphere_host     = "172.25.100.15"
+provider_vsphere_host     = "x.x.x.x"
 provider_vsphere_user     = "Administrator@vsphere.local"
-provider_vsphere_password = "S3curiport!"
+provider_vsphere_password = "passpord"
 
 # Infrastructure
-deploy_vsphere_datacenter = "DataCenter-AR-DNM"
-deploy_vsphere_cluster    = "Cluster-AR-DNM"
-deploy_vsphere_datastore  = "PowerStore AR-DNM"
-guest_vsphere_network    = "DVS-AR-DNM-PG_MGMT"
-deploy_vsphere_host       = "172.25.100.13"
+deploy_vsphere_datacenter = "DataCenter"
+deploy_vsphere_cluster    = "Cluster"
+deploy_vsphere_datastore  = "Datastore"
+guest_vsphere_network    = "DistrubutedSwitch"
+deploy_vsphere_host       = "Ip_vecenter"
 
 # Guest
 #guest_vsphere_network = "VM Network"
@@ -16,8 +16,8 @@ guest_name_prefix     = "k8s-prod"
 guest_num_cores_per_socket    = "3"
 guest_num_cpus        = "6"
 guest_memory          = "4096"
-guest_ssh_user        = "securiport"
-guest_ssh_password    = "Securiport"
+guest_ssh_user        = "username"
+guest_ssh_password    = "Password"
 
 # etcd(s)
   guest_host_etcd-01 = "172.25.100.54"
