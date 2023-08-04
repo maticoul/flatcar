@@ -5,15 +5,15 @@ $ export TF_VAR_provider_vsphere_user='username'
 $ export TF_VAR_provider_vsphere_password='password'
 $ export TF_VAR_provider_vsphere_host='x.x.x.x'
 ```
-cluster_infra
+# cluster_infra
 
 $ terraform init 
 $ terraform plan
 $ terraform apply
 
-
 ## 2- Ansible
-multi master with external etcd 
+
+# multi master with external etcd 
 ```bash
     $ - customize the inventory.ini to match your environment
     $ - ansible-playbook -i inventory.ini install-nodes-kubernetes.yml
@@ -22,7 +22,7 @@ multi master with external etcd
     $ - ansible-playbook -i inventory.ini cluster_k8s.yml
     $ - ansible-playbook -i inventory.ini controller.yml
 ```
-multi master internal etcd
+# multi master internal etcd
 ```bash
     $ - customize the inventory.ini to match your environment;
     $ - ansible-playbook -i inventory.ini install-nodes-kubernetes.yml;
