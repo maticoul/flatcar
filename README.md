@@ -6,13 +6,15 @@ $ export TF_VAR_provider_vsphere_password='password'
 $ export TF_VAR_provider_vsphere_host='x.x.x.x'
 ```
 ### cluster_infra
-
+```bash
 $ terraform init
-
-$ terraform plan
-
+```
+$ t```bash
+erraform plan
+```
+```bash
 $ terraform apply
-
+```
 ## 2- Ansible
 
 ### multi master with external etcd 
