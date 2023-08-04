@@ -9,8 +9,8 @@ $ export TF_VAR_provider_vsphere_host='x.x.x.x'
 ```bash
 $ terraform init
 ```
-$ t```bash
-erraform plan
+```bash
+$ terraform plan
 ```
 ```bash
 $ terraform apply
