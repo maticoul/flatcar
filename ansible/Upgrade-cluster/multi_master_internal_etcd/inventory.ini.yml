@@ -30,8 +30,8 @@ haproxy ansible_host=haproxy   ansible_python_interpreter=/usr/bin/python
 ansible_become=true
 ansible_python_interpreter=/opt/bin/python/bin/pypy
 RELEASE=v1.26.5
-ansible_user=securiport
-ansible_password=Securiport
+ansible_user=username
+ansible_password=password
 
 #[webservers]
 #alpha.example.org
