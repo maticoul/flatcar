@@ -1,4 +1,24 @@
----
+- name: Add hosts to hosts file
+  hosts: kubernetes
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Add hosts to the hosts file
+      shell: |
+         echo '192.168.40.50 loadbalancer' >> /etc/hosts
+         echo '192.168.40.51 nfs-server' >> /etc/hosts
+         echo '192.168.40.52 smb-server' >> /etc/hosts
+         echo '192.168.40.10 master01' >> /etc/hosts
+         echo '192.168.40.11 master02' >> /etc/hosts
+         echo '192.168.40.12 master03' >> /etc/hosts
+         echo '192.168.40.20 worker01' >> /etc/hosts
+         echo '192.168.40.21 worker02' >> /etc/hosts
+         echo '192.168.40.22 worker03' >> /etc/hosts
+         echo '192.168.40.30 etcd01' >> /etc/hosts
+         echo '192.168.40.31 etcd02' >> /etc/hosts
+         echo '192.168.40.32 etcd03' >> /etc/hosts
+
 - name: Generate 20-etcd-service-manager.conf
   hosts: etcd
   gather_facts: false
