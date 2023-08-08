@@ -1,5 +1,5 @@
 - name: pki directory
-  hosts: master
+  hosts: master01
   become: yes
   tasks:
     - name: pull images
@@ -21,6 +21,7 @@
           kind: ClusterConfiguration
           networking:
             podSubnet: {{ podSubnet }}
+          controlPlaneEndpoint: "{{ controlPlaneEndpoint }}:6443"
           clusterName: {{ clusterName }}
           controllerManager:
             extraArgs:
@@ -29,7 +30,7 @@
 
     - name: kubeadm init --config kubeadm-config.yaml
       become: yes
-      shell: "kubeadm init --config /home/{{ ansible_user }}/kubeadm-config.yaml >> first-master-joined.txt"
+      shell: "kubeadm init --config /home/{{ ansible_user }}/kubeadm-config.yaml --upload-certs >> first-master-joined.txt"
       args:
         chdir: $HOME
         creates: first-master-joined.txt
@@ -120,6 +121,13 @@
       become: yes
       shell : kubectl apply -f /home/{{ ansible_user }}/high-availability-1.21+.yaml
 
+    - name: get join command for masters
+      shell: sed -n '72,74p' $HOME/first-master-joined.txt
+      register: join_masters
+    - name: set join command
+      set_fact:
+        join_masters: "{{ join_masters.stdout | replace('\\\n\t', '') }}"
+
     - name: get join command for workers
       shell: kubeadm token create --print-join-command
       register: join_command_raw
@@ -127,6 +135,15 @@
     - name: set join command
       set_fact:
         join_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+- name: Join other masters
+  hosts: masters !master01
+  become: yes
+  tasks:
+    - name: Join other masters to the cluster
+      shell: "{{ hostvars['master01'].join_masters }}  --ignore-preflight-errors all"
+      register: join_result
+      changed_when: "'This node has joined the cluster' in join_result.stdout"
 
 - name: Join workers
   hosts: workers
@@ -138,3 +155,85 @@
         chdir: $HOME
       register: joined_result
       changed_when: "'This node has joined the cluster' in joined_result.stdout"
+      
+
+- name: copying kubeconfig from master01 to controller
+  hosts: haproxy
+  become: yes
+  tasks:
+    - name: creating $HOME/.kube folder
+      become: yes
+      file:
+        path: /home/{{ ansible_user }}/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: copy file admin.conf
+      become: yes
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ ansible_user }}/config
+        flat: yes
+      delegate_to: master01
+    - name: copy file admin.conf
+      become: yes
+      copy:
+        src: /home/{{ ansible_user }}/config
+        dest: /home/{{ ansible_user }}/.kube/config
+    - name: installing git 
+      apt:
+        name: git
+        state: present
+      become: yes
+      become_method: sudo
+
+    - name: installing helm 
+      become: yes
+      get_url:
+        url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
+        dest: /usr/local/bin
+        mode: 0755
+
+    - name: unzip helm
+      become: yes
+      unarchive:
+        src: /usr/local/bin/helm-v3.12.2-linux-amd64.tar.gz.asc
+        dest: /usr/local/bin/
+        remote_src: yes
+    
+    - name: Downloading helmfile using get_url
+      become: yes
+      get_url:
+        url: https://github.com/helmfile/helmfile/releases/download/v0.155.0/helmfile_0.155.0_linux_amd64.tar.gz
+        dest: /usr/bin
+        mode: 0755
+
+    - name: unzip helmfile
+      become: yes
+      unarchive:
+        src: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
+        dest: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
+        remote_src: yes
+
+    - name: installing helmfile plugin 
+      shell: helm plugin install https://github.com/databus23/helm-diff
+
+    - name: creating ns apis
+      shell: kubectl create ns apis
+
+    - name: creating smbcreds
+      shell: kubectl create secret generic smbcreds --from-literal=username={{ ansible_user }} --from-literal=password={{ ansible_password }} -n apis
+
+    - name: adding csi driver nfs repo
+      shell: helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+
+    - name: installing csi driver nfs
+      shell: helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server={{ nfs }} --set nfs.path={{ nfs-folder }}/ -n kube-system
+
+    - name: adding csi driver smb repo
+      shell: helm repo add csi-driver-smb https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+
+    - name: installing csi driver smb
+      shell: helm install csi-driver-smb csi-driver-smb/csi-driver-smb -n kube-system --version v1.11.0
