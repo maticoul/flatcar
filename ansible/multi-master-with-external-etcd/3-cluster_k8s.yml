@@ -3,7 +3,7 @@
   tasks:
     - name: creating kubernetes directory
       file:
-        path: /tmp/kubernetes/pki/etcd
+        path: /tmp/master01/pki/etcd/
         state: directory
         mode: "0755"
 
@@ -38,7 +38,7 @@
         state: directory
         mode: '0755'
 
-    - name: Create directory sub1
+    - name: copying directory pki
       copy:
         src: /tmp/master01/pki
         dest: /etc/kubernetes/
@@ -50,6 +50,7 @@
         owner: root
         group: root
         mode: '0755'
+        
     - name: pull images
       become: yes
       command:
@@ -218,6 +219,30 @@
         src:  /home/{{ ansible_user }}/master01_kubernetes.tar
         dest: /etc/kubernetes/
         remote_src: yes
+
+    - name: find non-reusable certificates insite /etc/kubernetes/pki
+      find:
+        paths: /etc/kubernetes/
+        patterns: "*"
+        recurse: yes
+        file_type: file
+        excludes:
+          - apiserver-etcd-client.crt
+          - apiserver-etcd-client.key
+          - ca.crt
+          - ca.key
+          - sa.key
+          - sa.pub
+          - front-proxy-ca.crt
+          - front-proxy-ca.key
+          - admin.conf
+      register: files_to_delete
+
+    - name: cleanup non-reusable certificates insite /etc/kubernetes/pki
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ files_to_delete.files }}"
 
     - name: change pki groupe own
       file:
