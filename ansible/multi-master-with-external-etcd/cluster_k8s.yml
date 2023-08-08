@@ -68,7 +68,7 @@
           apiVersion: kubeadm.k8s.io/v1beta3
           kind: ClusterConfiguration
           networking:
-            podSubnet: 192.168.0.0/16
+            podSubnet: {{ podSubnet }}
           controlPlaneEndpoint: "{{ controlPlaneEndpoint }}:6443"
           etcd:
             external:
@@ -123,7 +123,7 @@
               # Note: The ipPools section cannot be modified post-install.
               ipPools:
               - blockSize: 26
-                cidr: 192.168.0.0/16
+                cidr: {{ cidr }} 
                 encapsulation: VXLANCrossSubnet
                 natOutgoing: Enabled
                 nodeSelector: all()
