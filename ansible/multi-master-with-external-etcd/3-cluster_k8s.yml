@@ -182,7 +182,7 @@
 
     - name: Copy the archive of Kubernetes directory to controller
       fetch:
-        path: /tmp/master01_kubernetes.tar
+        src: /tmp/master01_kubernetes.tar
         dest: /tmp/master01_kubernetes.tar
         flat: yes
 
@@ -210,7 +210,7 @@
 
     - name: Copy the archive of Kubernetes directory to masters
       copy:
-        src: /home/{{ ansible_user }}/master01_kubernetes.tar
+        src: /tmp/master01_kubernetes.tar
         dest: /home/{{ ansible_user }}/
     
     - name: Extract the archive files in kubernetes
