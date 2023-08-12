@@ -70,7 +70,7 @@ resource "vsphere_virtual_machine" "etcd01" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -103,8 +103,8 @@ resource "vsphere_virtual_machine" "etcd01" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_etcd01}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd01}
+      ssh-keygen -R -y ${var.guest_host_etcd01}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd01}
     EOF
   }
 
@@ -134,7 +134,7 @@ resource "vsphere_virtual_machine" "etcd02" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -167,8 +167,8 @@ resource "vsphere_virtual_machine" "etcd02" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_etcd02}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd02}
+      ssh-keygen -R -y ${var.guest_host_etcd02}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd02}
     EOF
   }
 
@@ -198,7 +198,7 @@ resource "vsphere_virtual_machine" "etcd03" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -231,8 +231,8 @@ resource "vsphere_virtual_machine" "etcd03" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_etcd03}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd03}
+      ssh-keygen -R -y ${var.guest_host_etcd03}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd03}
     EOF
   }
 
@@ -262,7 +262,7 @@ resource "vsphere_virtual_machine" "master01" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -295,8 +295,8 @@ resource "vsphere_virtual_machine" "master01" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_master01}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master01}
+      ssh-keygen -R -y ${var.guest_host_master01}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master01}
     EOF
   }
 
@@ -327,7 +327,7 @@ resource "vsphere_virtual_machine" "master02" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -360,8 +360,8 @@ resource "vsphere_virtual_machine" "master02" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_master02}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master02}
+      ssh-keygen -R -y ${var.guest_host_master02}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master02}
     EOF
   }
 
@@ -391,7 +391,7 @@ resource "vsphere_virtual_machine" "master03" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -424,8 +424,8 @@ resource "vsphere_virtual_machine" "master03" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_master03}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master03}
+      ssh-keygen -R -y ${var.guest_host_master03}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master03}
     EOF
   }
 
@@ -455,7 +455,7 @@ resource "vsphere_virtual_machine" "worker01" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -488,8 +488,8 @@ resource "vsphere_virtual_machine" "worker01" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_worker01}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker01}
+      ssh-keygen -R -y ${var.guest_host_worker01}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker01}
     EOF
   }
 
@@ -520,7 +520,7 @@ resource "vsphere_virtual_machine" "worker02" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -553,8 +553,8 @@ resource "vsphere_virtual_machine" "worker02" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_worker02}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker02}
+      ssh-keygen -R -y ${var.guest_host_worker02}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker02}
     EOF
   }
 
@@ -584,7 +584,7 @@ resource "vsphere_virtual_machine" "worker03" {
   }
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    local_ovf_path            = "/home/securiport/terraform/ova/flatcar_production_vmware_ova.ova"
+    local_ovf_path            = "./flatcar_production_vmware_ova.ova"
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"
@@ -617,8 +617,8 @@ resource "vsphere_virtual_machine" "worker03" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_worker03}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker03}
+      ssh-keygen -R -y ${var.guest_host_worker03}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker03}
     EOF
   }
 

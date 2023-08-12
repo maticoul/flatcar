@@ -119,8 +119,15 @@ resource "vsphere_virtual_machine" "nfs-server" {
   } 
   
   provisioner "local-exec" {
-    command = "ssh-copy-id -i ${var.guest_ssh_user}@${self.guest_ip_addresses[0]}"
+    command = <<EOF
+      ssh-keygen -R -y ${var.guest_host_nfs-srv}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_nfs-srv}
+    EOF
   }
+
+  # provisioner "local-exec" {
+  #   command = "ssh-copy-id -i ${var.guest_ssh_user}@${self.guest_ip_addresses[0]}"
+  # }
 
   }
 
@@ -212,8 +219,8 @@ resource "vsphere_virtual_machine" "smb-srv" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_smb-srv}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_smb-srv}
+      ssh-keygen -R -y ${var.guest_host_smb-srv}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_smb-srv}
     EOF
   }
 }
@@ -285,8 +292,8 @@ resource "vsphere_virtual_machine" "haproxy" {
 
    provisioner "local-exec" {
     command = <<EOF
-      ssh-keygen -R ${var.guest_host_haproxy}
-      ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_haproxy}
+      ssh-keygen -R -y ${var.guest_host_haproxy}
+      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_haproxy}
     EOF
   }
 

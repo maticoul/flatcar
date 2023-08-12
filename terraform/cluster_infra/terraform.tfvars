@@ -1,8 +1,8 @@
-# Infrastructure
-deploy_vsphere_datacenter = "Datacenter"
-deploy_vsphere_cluster    = "cluster"
-deploy_vsphere_datastore  = "DATAS"
-deploy_vsphere_network    = "VM Network"
+# # Infrastructure
+# deploy_vsphere_datacenter = "Datacenter"
+# deploy_vsphere_cluster    = "cluster"
+# deploy_vsphere_datastore  = "DATAS"
+# deploy_vsphere_network    = "VM Network"
 
 # Guest
 guest_name_prefix     = "k8s-prod"

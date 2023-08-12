@@ -33,7 +33,6 @@ eksctl create cluster \
 
 
 
-
 Create a cluster.yaml file with the following content:
 
 cluster.yaml

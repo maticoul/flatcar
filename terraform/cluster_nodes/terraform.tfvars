@@ -1,7 +1,7 @@
-# Provider
-provider_vsphere_host     = "x.x.x.x"
-provider_vsphere_user     = "Administrator@vsphere.local"
-provider_vsphere_password = "passpord"
+# # Provider
+# provider_vsphere_host     = "x.x.x.x"
+# provider_vsphere_user     = "Administrator@vsphere.local"
+# provider_vsphere_password = "passpord"
 
 # Infrastructure
 deploy_vsphere_datacenter = "DataCenter"
