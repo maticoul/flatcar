@@ -98,7 +98,6 @@ resource "vsphere_virtual_machine" "etcd01" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -107,7 +106,6 @@ resource "vsphere_virtual_machine" "etcd01" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd01}
     EOF
   }
-
 }
 
 ## Deployment of VM from Remote OVF
@@ -162,7 +160,6 @@ resource "vsphere_virtual_machine" "etcd02" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -171,7 +168,6 @@ resource "vsphere_virtual_machine" "etcd02" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd02}
     EOF
   }
-
 }
 
 ## Deployment of VM from Remote OVF
@@ -226,7 +222,6 @@ resource "vsphere_virtual_machine" "etcd03" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -235,7 +230,6 @@ resource "vsphere_virtual_machine" "etcd03" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd03}
     EOF
   }
-
 }
 
 ## Deployment of VM from Remote OVF
@@ -290,7 +284,6 @@ resource "vsphere_virtual_machine" "master01" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -299,7 +292,6 @@ resource "vsphere_virtual_machine" "master01" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master01}
     EOF
   }
-
 }
 
  
@@ -355,7 +347,6 @@ resource "vsphere_virtual_machine" "master02" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -364,7 +355,6 @@ resource "vsphere_virtual_machine" "master02" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master02}
     EOF
   }
-
 }
   
 ## Deployment of VM from Remote OVF
@@ -419,7 +409,6 @@ resource "vsphere_virtual_machine" "master03" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -428,7 +417,6 @@ resource "vsphere_virtual_machine" "master03" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master03}
     EOF
   }
-
 }
 
 ## Deployment of VM from Remote OVF
@@ -483,7 +471,6 @@ resource "vsphere_virtual_machine" "worker01" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -492,7 +479,6 @@ resource "vsphere_virtual_machine" "worker01" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker01}
     EOF
   }
-
 }
 
 
@@ -548,7 +534,6 @@ resource "vsphere_virtual_machine" "worker02" {
       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
     ]
-
   } 
 
   provisioner "local-exec" {
@@ -557,7 +542,6 @@ resource "vsphere_virtual_machine" "worker02" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker02}
     EOF
   }
-
 }
 
 ## Deployment of VM from Remote OVF
@@ -621,5 +605,4 @@ resource "vsphere_virtual_machine" "worker03" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker03}
     EOF
   }
-
 }
