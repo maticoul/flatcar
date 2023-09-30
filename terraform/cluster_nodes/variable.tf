@@ -47,16 +47,42 @@ variable "deploy_vsphere_host" {
   description = "Porgroup to which the virtual machine will be connected."
 }
 
-variable "guest_num_cpus" {
+variable "guest_vcpu-etcd" {
   description = "The number of virtual processors to assign to this virtual machine. Default: 1."
  # default     = "1"
 }
 
-variable "guest_num_cores_per_socket" {
+variable "guest_vcpu-masters" {
   description = "The number of virtual processors to assign to this virtual machine. Default: 1."
  # default     = "1"
 }
-variable "guest_memory" {
+
+variable "guest_vcpu-workers" {
+  description = "The number of virtual processors to assign to this virtual machine. Default: 1."
+ # default     = "1"
+}
+
+# variable "guest_num_cpus" {
+#   description = "The number of virtual processors to assign to this virtual machine. Default: 1."
+#  # default     = "1"
+# }
+
+# variable "guest_num_cores_per_socket" {
+#   description = "The number of virtual processors to assign to this virtual machine. Default: 1."
+#  # default     = "1"
+# }
+
+variable "guest_memory-etcd" {
+  description = "The size of the virtual machine's memory, in MB. Default: 1024 (1 GB)."
+  #default     = "1024"
+}
+
+variable "guest_memory-masters" {
+  description = "The size of the virtual machine's memory, in MB. Default: 1024 (1 GB)."
+  #default     = "1024"
+}
+
+variable "guest_memory-workers" {
   description = "The size of the virtual machine's memory, in MB. Default: 1024 (1 GB)."
   #default     = "1024"
 }

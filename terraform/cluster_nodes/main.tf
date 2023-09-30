@@ -51,9 +51,10 @@ resource "vsphere_virtual_machine" "etcd01" {
   name                 = "${var.guest_name_prefix}-etcd01"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-etcd
+  # num_cpus             = var.guest_num_cpus-etcd
+  num_cpus             = var.guest_vcpu-etcd
+  memory               = var.guest_memory-etcd 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -100,12 +101,12 @@ resource "vsphere_virtual_machine" "etcd01" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_etcd01}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd01}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_etcd01}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd01}
+  #   EOF
+  # }
 }
 
 ## Deployment of VM from Remote OVF
@@ -113,9 +114,10 @@ resource "vsphere_virtual_machine" "etcd02" {
   name                 = "${var.guest_name_prefix}-etcd02"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-etcd
+  # num_cpus             = var.guest_num_cpus-etcd
+  num_cpus             = var.guest_vcpu-etcd 
+  memory               = var.guest_memory-etcd 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -162,12 +164,12 @@ resource "vsphere_virtual_machine" "etcd02" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_etcd02}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd02}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_etcd02}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd02}
+  #   EOF
+  # }
 }
 
 ## Deployment of VM from Remote OVF
@@ -175,9 +177,10 @@ resource "vsphere_virtual_machine" "etcd03" {
   name                 = "${var.guest_name_prefix}-etcd03"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-etcd
+  # num_cpus             = var.guest_num_cpus-etcd 
+  num_cpus             = var.guest_vcpu-etcd
+  memory               = var.guest_memory-etcd 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -224,12 +227,12 @@ resource "vsphere_virtual_machine" "etcd03" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_etcd03}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd03}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_etcd03}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_etcd03}
+  #   EOF
+  # }
 }
 
 ## Deployment of VM from Remote OVF
@@ -237,9 +240,10 @@ resource "vsphere_virtual_machine" "master01" {
   name                 = "${var.guest_name_prefix}-master01"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-masters
+  # num_cpus             = var.guest_num_cpus-masters 
+  num_cpus             = var.guest_vcpu-masters
+  memory               = var.guest_memory-masters 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -286,12 +290,12 @@ resource "vsphere_virtual_machine" "master01" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_master01}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master01}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_master01}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master01}
+  #   EOF
+  # }
 }
 
  
@@ -300,9 +304,10 @@ resource "vsphere_virtual_machine" "master02" {
   name                 = "${var.guest_name_prefix}-master02"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-mastres
+  # num_cpus             = var.guest_num_cpus-masters
+  num_cpus             = var.guest_vcpu-masters 
+  memory               = var.guest_memory-masters 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -349,12 +354,12 @@ resource "vsphere_virtual_machine" "master02" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_master02}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master02}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_master02}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master02}
+  #   EOF
+  # }
 }
   
 ## Deployment of VM from Remote OVF
@@ -362,9 +367,10 @@ resource "vsphere_virtual_machine" "master03" {
   name                 = "${var.guest_name_prefix}-master03"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-masters
+  # num_cpus             = var.guest_num_cpus-masters 
+  num_cpus             = var.guest_vcpu-masters
+  memory               = var.guest_memory-masters 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -411,12 +417,12 @@ resource "vsphere_virtual_machine" "master03" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_master03}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master03}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_master03}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_master03}
+  #   EOF
+  # }
 }
 
 ## Deployment of VM from Remote OVF
@@ -424,9 +430,10 @@ resource "vsphere_virtual_machine" "worker01" {
   name                 = "${var.guest_name_prefix}-worker01"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-workers
+  # num_cpus             = var.guest_num_cpus-workers
+  num_cpus             = var.guest_vcpu-workers 
+  memory               = var.guest_memory-workers 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -473,12 +480,12 @@ resource "vsphere_virtual_machine" "worker01" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_worker01}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker01}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_worker01}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker01}
+  #   EOF
+  # }
 }
 
 
@@ -487,9 +494,10 @@ resource "vsphere_virtual_machine" "worker02" {
   name                 = "${var.guest_name_prefix}-worker02"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-workers
+  # num_cpus             = var.guest_num_cpus-workers 
+  num_cpus             = var.guest_vcpu-workers
+  memory               = var.guest_memory-workers 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -536,12 +544,12 @@ resource "vsphere_virtual_machine" "worker02" {
     ]
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_worker02}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker02}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_worker02}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker02}
+  #   EOF
+  # }
 }
 
 ## Deployment of VM from Remote OVF
@@ -549,9 +557,10 @@ resource "vsphere_virtual_machine" "worker03" {
   name                 = "${var.guest_name_prefix}-worker03"
   datacenter_id        = data.vsphere_datacenter.datacenter.id
   datastore_id         = data.vsphere_datastore.datastore.id
-  num_cores_per_socket = var.guest_num_cores_per_socket
-  num_cpus             = var.guest_num_cpus 
-  memory               = var.guest_memory 
+  # num_cores_per_socket = var.guest_num_cores_per_socket-workers
+  # num_cpus             = var.guest_num_cpus-workers
+  num_cpus             = var.guest_vcpu-workers 
+  memory               = var.guest_memory-workers 
 #  guest_id             = "other5xLinux64Guest"
   host_system_id       = data.vsphere_host.host.id
   resource_pool_id     = data.vsphere_resource_pool.default.id
@@ -599,10 +608,10 @@ resource "vsphere_virtual_machine" "worker03" {
 
   } 
 
-  provisioner "local-exec" {
-    command = <<EOF
-      ssh-keygen -R -y ${var.guest_host_worker03}
-      echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker03}
-    EOF
-  }
+  # provisioner "local-exec" {
+  #   command = <<EOF
+  #     ssh-keygen -R -y ${var.guest_host_worker03}
+  #     echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_worker03}
+  #   EOF
+  # }
 }
