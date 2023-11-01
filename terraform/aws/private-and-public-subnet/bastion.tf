@@ -12,22 +12,33 @@ resource "aws_instance" "bastion-lunix" {
 
     availability_zone = "${var.zone}"
     vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
-    key_name = "${var.default_keypair_name}"
+    key_name = "${var.keypair_name}"
     
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_bastion-lunix
+    delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "bastion lunix"
+      Department = "Global Operations"
+    }
+  }
 
     provisioner "file" {
-     source      = "${var.default_keypair_name}"      # terraform machine
-     destination = "${var.default_keypair_name}" # remote machine
+     source      = "${var.keypair_name}"      # terraform machine
+     destination = "${var.keypair_name}" # remote machine
   }
     
     provisioner "local-exec" {
-     command = "chmod 400 ${var.default_keypair_name}"
+     command = "chmod 400 ${var.keypair_name}"
    
    }
     connection {
     type        = "ssh"
     user        = "${var.guest_ssh_user-bastion}"
-    private_key = file("${var.default_keypair_name}")
+    private_key = file("${var.keypair_name}")
     #private_key = file("~/.ssh/terraform")
     host        = self.public_ip
   }
@@ -43,7 +54,7 @@ resource "aws_instance" "bastion-lunix" {
       "wget https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_amd64.zip",
       "unzip terraform_1.6.1_linux_amd64.zip",
       "sudo mv terraform /usr/bin/",
-      "sudo chmod 400 ${var.default_keypair_name}",
+      "sudo chmod 400 ${var.keypair_name}",
       
     ]
 
@@ -68,9 +79,21 @@ resource "aws_instance" "bastion-Windows" {
     private_ip = "${cidrhost(var.subnet-public_cidr, 56 )}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
 
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_bastion-windows
+    delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "bastion windows"
+      Department = "Global Operations"
+    }
+  }
+
     availability_zone = "${var.zone}"
     vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
-    key_name = "${var.default_keypair_name}"
+    key_name = "${var.keypair_name}"
     
     tags = {
       Owner = "${var.owner}"

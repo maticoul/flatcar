@@ -34,7 +34,7 @@ resource "aws_vpc" "kubernetes" {
 ##########
 
 resource "aws_key_pair" "default_keypair" {
-  key_name = "${var.default_keypair_name}"
+  key_name = "${var.keypair_name}"
 #  public_key = "${var.default_keypair_public_key}"
   public_key = tls_private_key.rsa.public_key_openssh
 
@@ -52,7 +52,7 @@ resource "tls_private_key" "rsa" {
 
 resource "local_file" "TF-key" {
     content  = tls_private_key.rsa.private_key_pem
-    filename = "${var.default_keypair_name}"
+    filename = "${var.keypair_name}"
 }
 
 

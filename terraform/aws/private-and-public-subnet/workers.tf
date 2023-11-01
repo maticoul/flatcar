@@ -15,14 +15,23 @@ resource "aws_instance" "worker" {
 
     availability_zone = "${var.zone}"
     vpc_security_group_ids = ["${aws_security_group.kubernetes.id}"]
-    key_name = "${var.default_keypair_name}"
+    key_name = "${var.keypair_name}"
+    
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_worker
+    delete_on_termination = true
 
     tags = {
       Owner = "${var.owner}"
       Name = "${var.guest_name_prefix}-worker0-${count.index +1}"
-      #ansibleFilter = "${var.ansibleFilter}"
-      ansibleNodeType = "preprod-worker"
-      ansibleNodeName = "preprod-worker0${count.index +1}"
+      Department = "Global Operations"
+    }
+  }
+  
+    tags = {
+      Owner = "${var.owner}"
+      Name = "${var.guest_name_prefix}-worker0-${count.index +1}"
       Department = "Global Operations"
      }
 

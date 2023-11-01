@@ -1,3 +1,43 @@
+variable "disk_etcd" {
+  description = "Name of the VPC"
+  default = "30"
+}
+
+variable "disk_master" {
+  description = "Name of the VPC"
+  default = "30"
+}
+
+variable "disk_worker" {
+  description = "Name of the VPC"
+  default = "30"
+}
+
+variable "disk_smb" {
+  description = "Name of the VPC"
+  default = "50"
+}
+
+variable "disk_nfs" {
+  description = "Name of the VPC"
+  default = "1024"
+}
+
+variable "disk_iics" {
+  description = "Name of the VPC"
+  default = "250"
+}
+
+variable "disk_bastion-lunix" {
+  description = "Name of the VPC"
+  default = "250"
+}
+
+variable "disk_bastion-windows" {
+  description = "Name of the VPC"
+  default = "250"
+}
+
 variable control_cidr {
   description = "CIDR for maintenance: inbound traffic will be allowed from this IPs"
 }
@@ -24,7 +64,7 @@ variable "guest_ssh_user-bastion" {
 #   description = "Public Key of the default keypair"
 # }
 
-variable "default_keypair_name" {
+variable "keypair_name" {
   description = "Name of the KeyPair used for all nodes"
   #default = ""
   type = string

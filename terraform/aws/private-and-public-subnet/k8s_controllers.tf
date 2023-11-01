@@ -16,14 +16,23 @@ resource "aws_instance" "controller" {
 
     availability_zone = "${var.zone}"
     vpc_security_group_ids = ["${aws_security_group.kubernetes.id}"]
-    key_name = "${var.default_keypair_name}"
+    key_name = "${var.keypair_name}"
+    
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_master
+    delete_on_termination = true
 
     tags = {
       Owner = "${var.owner}"
       Name = "${var.guest_name_prefix}-master0-${count.index +1}"
-      #ansibleFilter = "${var.ansibleFilter}"
-      ansibleNodeType = "preprod-controller"
-      ansibleNodeName = "preprod-controller0${count.index +1}"
+      Department = "Global Operations"
+    }
+  }
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "${var.guest_name_prefix}-master0-${count.index +1}"
       Department = "Global Operations"
     }
 
