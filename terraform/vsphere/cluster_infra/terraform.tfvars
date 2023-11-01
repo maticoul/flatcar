@@ -1,0 +1,30 @@
+# # Infrastructure
+# deploy_vsphere_datacenter = "Datacenter"
+# deploy_vsphere_cluster    = "cluster"
+# deploy_vsphere_datastore  = "DATAS"
+# deploy_vsphere_network    = "VM Network"
+
+# Guest
+guest_name_prefix     = "k8s-prod"
+guest_template        = "template"
+#guest_num_cores_per_socket    = "3"
+guest_vcpu            = "6"
+guest_memory          = "4096"
+guest_ipv4_netmask    = "24"
+guest_ipv4_gateway    = "192.168.40.1"
+guest_dns_servers     = "8.8.8.8"
+guest_dns_suffix      = "dns"
+guest_domain          = "dns"
+guest_ssh_user        = "usernamin"
+guest_ssh_password    = "password"
+guest_ssh_key_private = "~/.ssh/id_rsa"
+guest_ssh_key_public  = "~/.ssh/id_rsa.pub"
+haproxy-disk-size     = "50"
+smb-srv-disk-size     = "50"
+nfs-srv-disk-size     = "250"
+
+
+guest_host_nfs-srv    = "192.168.40.26"
+guest_host_haproxy    = "192.168.40.27"
+guest_host_smb-srv    = "192.168.40.28"
+subnet        = "192.168.40.0"

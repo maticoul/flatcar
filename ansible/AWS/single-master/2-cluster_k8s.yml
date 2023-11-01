@@ -1,0 +1,232 @@
+---
+- name: pki directory
+  hosts: master
+  become: yes
+  tasks:
+    - name: pull images
+      become: yes
+      command:
+        cmd: kubeadm config images pull
+
+    - name: Creating kubeadm configuracion file
+      copy:
+        content: |
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: InitConfiguration
+          nodeRegistration:
+            kubeletExtraArgs:
+              volume-plugin-dir: "/opt/libexec/kubernetes/kubelet-plugins/volume/exec/"
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: ClusterConfiguration
+          networking:
+            podSubnet: {{ podSubnet }}
+          clusterName: {{ clusterName }}
+          controllerManager:
+            extraArgs:
+              flex-volume-plugin-dir: "/opt/libexec/kubernetes/kubelet-plugins/volume/exec/"
+          ---
+          kind: KubeletConfiguration
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          cgroupDriver: $(docker info -f '{{.CgroupDriver}}')
+        dest: /home/{{ ansible_user }}/kubeadm-config.yaml
+
+    - name: kubeadm init --config kubeadm-config.yaml
+      become: yes
+      shell: "kubeadm init --config /home/{{ ansible_user }}/kubeadm-config.yaml >> first-master-joined.txt"
+      args:
+        chdir: $HOME
+        creates: first-master-joined.txt
+
+    - name: creating .kube directory
+      become: yes
+      file:
+        path: $HOME/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: copy file admin.conf
+      become: yes
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Creating calico configuracion file
+      become: yes
+      set_fact:
+        calico_content: |
+          # Source: https://docs.projectcalico.org/manifests/custom-resources.yaml
+          apiVersion: operator.tigera.io/v1
+          kind: Installation
+          metadata:
+            name: default
+          spec:
+            # Configures Calico networking.
+            calicoNetwork:
+              # Note: The ipPools section cannot be modified post-install.
+              ipPools:
+              - blockSize: 26
+                cidr: {{ cidr }}
+                encapsulation: VXLANCrossSubnet
+                natOutgoing: Enabled
+                nodeSelector: all()
+            flexVolumePath: /opt/libexec/kubernetes/kubelet-plugins/volume/exec/
+
+    - name: Creating calico configuracion file on home directory
+      become: yes
+      copy:
+        content: "{{ calico_content }}"
+        dest: /home/{{ ansible_user }}/calico.yaml
+
+    - name: Downloading calico using get_url
+      become: yes
+      get_url:
+        url: https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/custom-resources.yaml
+        dest: /home/{{ ansible_user }}/
+
+    - name: install Tigera
+      become: yes
+      command: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/tigera-operator.yaml
+
+    - name: install custom-resources.yaml for Tigera
+      become: yes
+      command: kubectl create -f /home/{{ ansible_user }}/custom-resources.yaml
+
+    - name: install Calico
+      become: yes
+      command: kubectl apply -f /home/{{ ansible_user }}/calico.yaml
+
+    - name: Downloading metric server
+      become: yes
+      get_url:
+        url: https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml
+        dest: /home/{{ ansible_user }}/
+
+    - name: Add kubelet-insecure-tls argument
+      lineinfile:
+        path: /home/{{ ansible_user }}/high-availability-1.21+.yaml
+        line: "        - --kubelet-insecure-tls"
+        insertafter: "args:"
+        state: present
+      register: line_changed
+
+    - name: Print success message
+      debug:
+        msg: "The kubelet-insecure-tls argument has been added."
+
+    - name: installing metric
+      become: yes
+      shell : kubectl apply -f /home/{{ ansible_user }}/high-availability-1.21+.yaml
+
+    - name: get join command for workers
+      shell: kubeadm token create --print-join-command
+      register: join_command_raw
+
+    - name: set join command
+      set_fact:
+        join_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+- name: Join workers
+  hosts: workers
+  become: yes
+  tasks:
+    - name: join cluster
+      shell: "{{ hostvars['master'].join_command }} --ignore-preflight-errors all  >> masters_joined.txt"
+      args:
+        chdir: $HOME
+      register: joined_result
+      changed_when: "'This node has joined the cluster' in joined_result.stdout"
+
+- name: copying kubeconfig from master01 to controller
+  hosts: haproxy
+  become: yes
+  tasks:
+    - name: creating $HOME/.kube folder
+      become: yes
+      file:
+        path: /home/{{ mgmt_user }}/.kube
+        state: directory
+        owner: "{{ mgmt_user }}"
+        group: "{{ mgmt_user }}"
+        mode: '0755'
+
+    - name: copy file admin.conf
+      become: yes
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ mgmt_user }}/config
+        flat: yes
+      delegate_to: master
+
+    - name: copy file admin.conf to kube/config
+      become: yes
+      copy:
+        src: /home/{{ mgmt_user }}/config
+        dest: /home/{{ mgmt_user }}/.kube/config
+
+    - name: installing git 
+      apt:
+        name: git
+        state: present
+      become: yes
+      become_method: sudo
+ 
+    - name: Downloading kubelet
+      get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '/usr/local/bin/'
+        mode: '+x'
+
+    - name: installing helm 
+      become: yes
+      get_url:
+        url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
+        dest: /usr/local/bin
+        mode: 0755
+
+    - name: unzip cni plugins
+      become: yes
+      unarchive:
+        src: /usr/local/bin/helm-v3.12.2-linux-amd64.tar.gz.asc
+        dest: /usr/local/bin/
+        remote_src: yes
+    
+    - name: Download helmfile using get_url
+      become: yes
+      get_url:
+        url: https://github.com/helmfile/helmfile/releases/download/v0.155.0/helmfile_0.155.0_linux_amd64.tar.gz
+        dest: /usr/bin
+        mode: 0755
+
+    - name: unzip helmfile 
+      become: yes
+      unarchive:
+        src: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
+        dest: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
+        remote_src: yes
+
+    - name: installing helmfile plugin 
+      shell: helm plugin install https://github.com/databus23/helm-diff
+
+    - name: creating ns apis
+      shell: kubectl create ns apis
+
+    - name: creating smbcreds
+      shell: kubectl create secret generic smbcreds --from-literal=username={{ mgmt_user }} --from-literal=password={{ mgmt_password }} -n apis
+
+    - name: adding nfs csi driver repo 
+      shell: helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+
+    - name: adding smb csi driver repo
+      shell: helm repo add csi-driver-smb https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+
+    - name: installing smb csi driver
+      shell: helm install csi-driver-smb csi-driver-smb/csi-driver-smb -n kube-system --version v1.11.0
+

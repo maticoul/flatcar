@@ -1,0 +1,343 @@
+- name: Create three subdirectories
+  hosts: localhost
+  tasks:
+    - name: creating kubernetes directory
+      file:
+        path: /tmp/master01/pki/etcd/
+        state: directory
+        owner: "{{ mgmt_user }}"
+        group: "{{ mgmt_user }}"
+        mode: "0755"
+
+- name: Copy certs to controller
+  hosts: etcd01
+  tasks:
+    - name: Copy apiserver-etcd-client.crt
+      fetch:
+        src: /etc/kubernetes/pki/apiserver-etcd-client.crt
+        dest: /tmp/master01/pki/
+        flat: yes
+
+    - name: copy apiserver-etcd-client.key
+      fetch:
+        src: /etc/kubernetes/pki/apiserver-etcd-client.key
+        dest: /tmp/master01/pki/
+        flat: yes
+
+    - name: copy ca.crt
+      fetch:
+        src: /etc/kubernetes/pki/etcd/ca.crt
+        dest: /tmp/master01/pki/etcd/
+        flat: yes
+
+- name: pki directory
+  hosts: master01
+  become: yes
+  tasks:
+    - name: creating kubernetes directory
+      file:
+        path: /etc/kubernetes/
+        state: directory
+        mode: '0755'
+
+    - name: copying directory pki
+      copy:
+        src: /tmp/master01/pki
+        dest: /etc/kubernetes/
+        mode: '0755'
+
+    - name: change pki groupe own
+      file:
+        path: /etc/kubernetes/pki
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: pull images
+      become: yes
+      command:
+        cmd: kubeadm config images pull
+
+    - name: Creating kubeadm configuracion file
+      copy:
+        content: |
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: InitConfiguration
+          nodeRegistration:
+            kubeletExtraArgs:
+              volume-plugin-dir: "/opt/libexec/kubernetes/kubelet-plugins/volume/exec/"
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: ClusterConfiguration
+          networking:
+            podSubnet: {{ podSubnet }}
+          controlPlaneEndpoint: "{{ controlPlaneEndpoint }}:6443"
+          etcd:
+            external:
+              endpoints:
+                - https://{{ HOST0 }}:2379
+                - https://{{ HOST1 }}:2379
+                - https://{{ HOST2 }}:2379
+              caFile: /etc/kubernetes/pki/etcd/ca.crt
+              certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
+              keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
+          clusterName: lab-cluster
+          controllerManager:
+            extraArgs:
+              flex-volume-plugin-dir: "/opt/libexec/kubernetes/kubelet-plugins/volume/exec/"
+        dest: /home/{{ ansible_user }}/kubeadm-config.yaml
+
+    - name: kubeadm init --config kubeadm-config.yaml
+      become: yes
+      shell: kubeadm init --config /home/{{ ansible_user }}/kubeadm-config.yaml --upload-certs
+
+    - name: creating .kube directory
+      become: yes
+      file:
+        path: $HOME/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: copy file admin.conf
+      become: yes
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Creating calico configuracion file
+      become: yes
+      set_fact:
+        calico_content: |
+          # Source: https://docs.projectcalico.org/manifests/custom-resources.yaml
+          apiVersion: operator.tigera.io/v1
+          kind: Installation
+          metadata:
+            name: default
+          spec:
+            # Configures Calico networking.
+            calicoNetwork:
+              # Note: The ipPools section cannot be modified post-install.
+              ipPools:
+              - blockSize: 26
+                cidr: {{ cidr }}
+                encapsulation: VXLANCrossSubnet
+                natOutgoing: Enabled
+                nodeSelector: all()
+            flexVolumePath: /opt/libexec/kubernetes/kubelet-plugins/volume/exec/
+
+    - name: Creating calico configuracion file on home directory
+      become: yes
+      copy:
+        content: "{{ calico_content }}"
+        dest: /home/{{ ansible_user }}/calico.yaml
+
+    - name: install Tigera
+      become: yes
+      command: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/tigera-operator.yaml
+
+    - name: install Calico
+      become: yes
+      command: kubectl apply -f /home/{{ ansible_user }}/calico.yaml
+
+    - name: Downloading metric server
+      become: yes
+      get_url:
+        url: https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml
+        dest: /home/{{ ansible_user }}/
+
+    - name: Add kubelet-insecure-tls argument
+      lineinfile:
+        path: /home/{{ ansible_user }}/high-availability-1.21+.yaml
+        line: "        - --kubelet-insecure-tls"
+        insertafter: "args:"
+        state: present
+      register: line_changed
+
+    - name: Print success message
+      debug:
+        msg: "The kubelet-insecure-tls argument has been added."
+
+    - name: installing metric
+      become: yes
+      shell : kubectl apply -f /home/{{ ansible_user }}/high-availability-1.21+.yaml
+
+    - name: archive of kubernetes directory
+      archive:
+        path: /etc/kubernetes/
+        dest: /tmp/master01_kubernetes.tar
+
+    - name: Copy the archive of Kubernetes directory to controller
+      fetch:
+        src: /tmp/master01_kubernetes.tar
+        dest: /tmp/master01_kubernetes.tar
+        flat: yes
+
+    - name: get join command
+      shell: kubeadm token create --print-join-command
+      register: join_command_raw
+
+    - name: get join command
+      shell: kubeadm token create --print-join-command
+      register: join_command_raw
+
+    - name: set join command
+      set_fact:
+        join_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+- name: pki directory
+  hosts: masters !master01
+  become: yes
+  tasks:
+    - name: creating kubernetes directory
+      file:
+        path: /etc/kubernetes/
+        state: directory
+        mode: '0755'
+
+    - name: Copy the archive of Kubernetes directory to masters
+      copy:
+        src: /tmp/master01_kubernetes.tar
+        dest: /home/{{ ansible_user }}/
+
+    - name: Extract the archive files in kubernetes
+      unarchive:
+        src:  /home/{{ ansible_user }}/master01_kubernetes.tar
+        dest: /etc/kubernetes/
+        remote_src: yes
+
+    - name: find non-reusable certificates insite /etc/kubernetes/pki
+      find:
+        paths: /etc/kubernetes/
+        patterns: "*"
+        recurse: yes
+        file_type: file
+        excludes:
+          - apiserver-etcd-client.crt
+          - apiserver-etcd-client.key
+          - ca.crt
+          - ca.key
+          - sa.key
+          - sa.pub
+          - front-proxy-ca.crt
+          - front-proxy-ca.key
+          - admin.conf
+      register: files_to_delete
+
+    - name: cleanup non-reusable certificates insite /etc/kubernetes/pki
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ files_to_delete.files }}"
+
+    - name: change pki groupe own
+      file:
+        path: /etc/kubernetes/pki
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: join cluster
+      shell: "{{ hostvars['master01'].join_command }} --control-plane  --ignore-preflight-errors all  >> masters_joined.txt"
+
+- name: Join workers
+  hosts: workers
+  become: yes
+  tasks:
+    - name: join cluster
+      shell: "{{ hostvars['master01'].join_command }} --ignore-preflight-errors all  >> masters_joined.txt"
+
+- name: copying kubeconfig from master01 to controller
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: creating $HOME/.kube folder
+      become: yes
+      file:
+        path: /home/{{ mgmt_user }}/.kube
+        state: directory
+        owner: "{{ mgmt_user }}"
+        group: "{{ mgmt_user }}"
+        mode: '0755'
+
+    - name: copy file admin.conf
+      become: yes
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ mgmt_user }}/config
+        flat: yes
+      delegate_to: master01
+    - name: copy file admin.conf
+      become: yes
+      copy:
+        src: /home/{{ mgmt_user }}/config
+        dest: /home/{{ mgmt_user }}/.kube/config
+
+    - name: installing git
+      apt:
+        name: git
+        state: present
+      become: yes
+      become_method: sudo
+
+    - name: Download helm using get_url
+      become: yes
+      get_url:
+        url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
+        dest: /usr/local/bin
+        mode: 0755
+
+    - name: Downloading kubectl
+      become: yes
+      get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '/usr/local/bin/'
+        mode: '+x'
+
+    - name: unzip helm
+      become: yes
+      unarchive:
+        src: /usr/local/bin/helm-v3.12.2-linux-amd64.tar.gz.asc
+        dest: /usr/local/bin/
+        remote_src: yes
+
+    - name: Download helmfile using get_url
+      become: yes
+      get_url:
+        url: https://github.com/helmfile/helmfile/releases/download/v0.155.0/helmfile_0.155.0_linux_amd64.tar.gz
+        dest: /usr/bin
+        mode: 0755
+
+    - name: unzip helmfile
+      become: yes
+      unarchive:
+        src: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
+        dest: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
+        remote_src: yes
+
+    - name: installing helmfile plugin
+      shell: helm plugin install https://github.com/databus23/helm-diff
+
+    - name: create ns apis
+      shell: kubectl create ns apis
+
+    - name: creating smbcreds
+      shell: kubectl create secret generic smbcreds --from-literal=username={{ mgmt_user }} --from-literal=password={{ mgmt_password }} -n apis
+
+    - name: add csi driver nfs repo
+      shell: helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+
+    - name: installing csi driver nfs
+      shell: helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server={{ nfs }} --set nfs.path={{ nfs-folder }}/ -n kube-system
+
+    - name: add csi driver smb repo
+      shell: helm repo add csi-driver-smb https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+
+    - name: installing csi driver smb
+      shell: helm install csi-driver-smb csi-driver-smb/csi-driver-smb -n kube-system --version v1.11.0

@@ -1,0 +1,148 @@
+- name: Download kubeadm from storage.googleapis.com
+  hosts: kubernetes
+  tasks:
+   - name: Creating a file /etc/modules-load.d/k8s.conf
+     become: yes
+     copy:
+       dest: "/etc/modules-load.d/k8s.conf"
+       content: |
+         br_netfilter
+
+   - name: Disable SWAP
+     shell: |
+       swapoff -a
+
+   - name: Creating a file /etc/sysctl.d/k8s.conf
+     become: yes
+     copy:
+       dest: "/etc/sysctl.d/k8s.conf"
+       content: |
+         net.bridge.bridge-nf-call-ip6tables = 1
+         net.bridge.bridge-nf-call-iptables = 1
+
+   - name: running sysctl --system command
+     become: yes
+     command:
+       cmd: sysctl --system
+     register: __output
+
+   - name: creating opt/cni/bin directory
+     become: yes
+     file:
+       path: /opt/cni/bin
+       state: directory
+       mode: 0775
+
+   - name: creating /etc/systemd/system/kubelet.service.d directory
+     become: yes
+     file:
+       path: /etc/systemd/system/kubelet.service.d
+       state: directory
+       mode: 0755
+
+   - name: Download nano using get_url
+     become: yes
+     get_url:
+       url: https://raw.githubusercontent.com/andrew-d/static-binaries/master/binaries/linux/x86_64/nano
+       dest: /opt/bin
+       mode: 0755
+
+   - name: Download CNI using get_url
+     become: yes
+     get_url:
+       url: https://github.com/containernetworking/plugins/releases/download/{{ CNI_VERSION }}/cni-plugins-linux-amd64-{{ CNI_VERSION }}.tgz
+       dest: /opt/cni/bin
+
+   - name: unzip cni plugins
+     become: yes
+     unarchive:
+       src: /opt/cni/bin/cni-plugins-linux-amd64-{{ CNI_VERSION }}.tgz
+       dest: /opt/cni/bin
+       remote_src: yes
+
+   - name: Download crictl using get_url
+     become: yes
+     get_url:
+       url: https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ CRICTL_VERSION }}/crictl-{{ CRICTL_VERSION }}-linux-amd64.tar.gz
+       dest: /opt/bin/
+
+   - name: unzip crictl
+     become: yes
+     unarchive:
+       src: /opt/bin/crictl-{{ CRICTL_VERSION }}-linux-amd64.tar.gz
+       dest: /opt/bin
+       remote_src: yes
+       mode: 0755
+
+   - name: Download kubelet.service template
+     get_url:
+        url: "https://raw.githubusercontent.com/kubernetes/release/{{ RELEASE_VERSION }}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
+        dest: "/tmp/kubelet.service.template"
+
+   - name: Modify kubelet.service template
+     replace:
+        path: "/tmp/kubelet.service.template"
+        regexp: '/usr/bin'
+        replace: '{{ DOWNLOAD_DIR }}'
+
+   - name: Copy modified kubelet.service to systemd directory
+     copy:
+        src: "/tmp/kubelet.service.template"
+        dest: "/etc/systemd/system/kubelet.service"
+        mode: '+x'
+        remote_src: yes
+
+   - name: Download kubeadm.conf template
+     get_url:
+        url: "https://raw.githubusercontent.com/kubernetes/release/v0.4.0/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf"
+        dest: "/tmp/10-kubeadm.conf.template"
+
+   - name: Modify kubeadm.conf template
+     replace:
+        path: "/tmp/10-kubeadm.conf.template"
+        regexp: '/usr/bin'
+        replace: '{{ DOWNLOAD_DIR }}'
+
+   - name: Copy modified kubeadm.conf to systemd directory
+     copy:
+        src: "/tmp/10-kubeadm.conf.template"
+        dest: "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
+        mode: '+x'
+        remote_src: yes
+
+   - name: Downloading kubeadm
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+
+   - name: Downloading kubelet
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+
+   - name: Downloading kubectl
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+
+   - name: running sysctl daemon-reload command
+     become: yes
+     command:
+       cmd: systemctl daemon-reload
+
+   - name: running enable kubelet command
+     become: yes
+     command:
+       cmd: systemctl enable --now kubelet
+     register: __output
+
+   - name: reboot ALL machines
+     reboot:
+
+   - name: running restart kubelet command
+     become: yes
+     command:
+       cmd: systemctl restart kubelet
