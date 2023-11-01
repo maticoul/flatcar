@@ -37,10 +37,12 @@ nfs-srv ansible_host=nfs-srv   ansible_python_interpreter=/usr/bin/python
 smb-srv ansible_host=smb-srv   ansible_python_interpreter=/usr/bin/python
 
 [all:vars]
+clusterName=lab-cluster
+controlPlaneEndpoint=
+ansible_ssh_private_key_file=/home/ubuntu/k8s-apis.pem
 ansible_become=true
 ansible_python_interpreter=/opt/bin/python/bin/pypy
 controlPlaneEndpoint=192.168.40.51
-clusterName=lab-cluster
 CNI_VERSION=v1.3.0
 CRICTL_VERSION=v1.26.0
 RELEASE_VERSION=v0.15.1
@@ -53,8 +55,9 @@ shared=/mnt/nfs-server/
 server1=192.168.40.80
 server1=192.168.40.81
 server1=192.168.40.82
-ansible_password=username
-ansible_user=password
+mgmt_password=username
+mgmt_user=ubuntu
+ansible_user=core
 subnet=192.168.40.0/24
 nfs-folder=/mnt/nfs-server/
 samba-folder=/srv/samba/file-loader
