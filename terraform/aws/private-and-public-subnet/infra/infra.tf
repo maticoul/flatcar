@@ -3,21 +3,33 @@
 #########################
 
 resource "aws_instance" "nfs-server" {
-    ami = "${var.aws_ami}"
+    ami = "${var.ami_infra}"
     instance_type = "${var.nfs-instance-type}"
 
-    subnet_id = "${var.aws_subnet}"
+    subnet_id = "${aws_subnet.kubernetes-private.id}"
     private_ip = "${cidrhost(var.subnet-private_cidr, 55)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
+    
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_nfs
+    delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "nfs-server"
+      Department = "Global Operations"
+    }
+  }
 
     availability_zone = "${var.zone}"
-    vpc_security_group_ids = "${var.security_group.bastion}"
+    vpc_security_group_ids = ["${aws_security_group.infra.id}"]
     key_name = "${var.keypair_name}"
     
     connection {
     type        = "ssh"
-    user        = "${var.guest_ssh_user}"
-    private_key = file("${var.keypair_name}")
+    user        = "${var.guest_ssh_user-bastion}"
+    private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.private_ip
   }
@@ -49,30 +61,39 @@ resource "aws_instance" "nfs-server" {
 #########################
 
 resource "aws_instance" "smb-server" {
-    ami = "${var.aws_ami}"
+    ami = "${var.ami_infra}"
     instance_type = "${var.smb-instance-type}"
 
-    subnet_id = "${var.aws_subnet}"
+    subnet_id = "${aws_subnet.kubernetes-private.id}"
     private_ip = "${cidrhost(var.subnet-private_cidr, 56)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
+    
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_smb
+    delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "smb-server"
+      Department = "Global Operations"
+    }
+  }
 
     availability_zone = "${var.zone}"
-    vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
+    vpc_security_group_ids = ["${aws_security_group.infra.id}"]
     key_name = "${var.keypair_name}"
     
     provisioner "file" {
-     source      = "${var.keypair_name}"      # terraform machine
-     destination = "${var.keypair_name}" # remote machine
+     source      = "${var.keypair_name}.pem"      # terraform machine
+     destination = "${var.keypair_name}.pem" # remote machine
   }
     
-    provisioner "local-exec" {
-     command = "chmod 400 ${var.keypair_name}"
-   
-   }
+    
     connection {
     type        = "ssh"
-    user        = "${var.guest_ssh_user}"
-    private_key = file("${var.keypair_name}")
+    user        = "${var.guest_ssh_user-bastion}"
+    private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.private_ip
   }
@@ -96,48 +117,6 @@ resource "aws_instance" "smb-server" {
     }
 }
 
-#########################
-# ha-proxy instances
-#########################
-
-resource "aws_instance" "ha-proxy" {
-    count = 2
-    ami = "${var.aws_ami}"
-    instance_type = "${var.ha-instance-type}"
-
-    subnet_id = "${var.aws_subnet}"
-    private_ip = "${cidrhost(var.subnet-private_cidr, 57 + count.index)}"
-    #associate_public_ip_address = false # Instances have public, dynamic IP
-
-    availability_zone = "${var.zone}"
-    vpc_security_group_ids = "${var.security_group.bastion}"
-    key_name = "${var.keypair_name}"
-    
-
-    connection {
-    type        = "ssh"
-    user        = "${var.guest_ssh_user}"
-    private_key = file("${var.keypair_name}")
-    #private_key = file("~/.ssh/terraform")
-    host        = self.private_ip
-  }
-
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update && sudo -S apt-get -qq install python -y",
-      "sudo apt-get install -y haproxy",
-    ]
-
-  }
-
-    tags = {
-      Owner = "${var.owner}"
-      Name = "haproxy-0${count.index +1}"
-      Department = "Global Operations"
-    }
-}
-
 
 #########################
 # IICS SERVER instances
@@ -145,15 +124,27 @@ resource "aws_instance" "ha-proxy" {
 
 resource "aws_instance" "IICS-SERVER" {
     count = 1
-    ami = "${var.aws_ami}"
+    ami = "${var.ami_iics}"
     instance_type = "${var.windows-instance-type}"
 
-    subnet_id = "${var.aws_subnet}"
+    subnet_id = "${aws_subnet.kubernetes-private.id}"
     private_ip = "${cidrhost(var.subnet-private_cidr, 60 )}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
+    
+    root_block_device {
+    volume_type           = "gp2"
+    volume_size           = var.disk_iics
+    delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "iics-server"
+      Department = "Global Operations"
+    }
+  }
 
     availability_zone = "${var.zone}"
-    vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
+    vpc_security_group_ids = ["${aws_security_group.infra.id}"]
     key_name = "${var.keypair_name}"
   
     tags = {
@@ -161,4 +152,43 @@ resource "aws_instance" "IICS-SERVER" {
       Name = "IICS-SERVER"
       Department = "Global Operations"
     }
+}
+
+############
+## Security
+############
+
+resource "aws_security_group" "infra" {
+  vpc_id = var.vpc_kubernetes
+  name = "infra-sg"
+
+  # Allow inbound traffic to the port used by Kubernetes API HTTPS
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  # Allow all traffic from control host IP
+  ingress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["${var.control_cidr}"]
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Owner = "${var.owner}"
+    Name = "infra-sg"
+    Department = "Global Operations"
+  }
 }

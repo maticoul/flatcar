@@ -116,13 +116,17 @@ variable ansibleFilter {
 
 # Networking setup
 variable region {
-  default = "ap-south-1"
+  default = "us-west-2"
 }
 
 variable zone {
-  default = "ap-south-1c"
+  default = "us-west-2a"
 }
 
+variable "guest_ssh_user" {
+  description = "SSH username to connect to the guest VM."
+  default = "core"
+}
 variable "guest_ssh_user-bastion" {
   description = "SSH username to connect to the guest VM."
   default = "ubuntu"
@@ -154,23 +158,12 @@ variable amis {
     sa-east-1 = "ami-e93da085"
     us-east-1 = "ami-0e12c4fb31633888a"
     us-west-1 = "ami-6e165d0e"
-    us-west-2 = "ami-a9d276c9"
+    us-west-2 = "ami-01afff0691ed88b86"
   }
 }
 variable default_instance_user {
   default = "securiport"
 }
-
-variable etcd_instance_type {
-  default = "t2.large"
-}
-variable controller_instance_type {
-  default = "t2.large"
-}
-variable worker_instance_type {
-  default = "t2.large"
-}
-
 
 variable kubernetes_cluster_dns {
   default = "10.31.0.1"

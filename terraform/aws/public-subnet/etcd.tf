@@ -8,7 +8,7 @@ resource "aws_instance" "etcd" {
     instance_type = "${var.etcd_instance_type}"
 
     subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.vpc_cidr, 10 + count.index)}"
+    private_ip = "${cidrhost(var.subnet_cidr, 10 + count.index)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {
@@ -18,7 +18,7 @@ resource "aws_instance" "etcd" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "Bastion-lunix"
+      Name = "preprod-etcd0-${count.index +1}"
       Department = "Global Operations"
     }
   }
@@ -36,8 +36,8 @@ resource "aws_instance" "etcd" {
 
     connection {
      type        = "ssh"
-     user        = "var.guest_ssh_user"
-     private_key = file("../${var.keypair_name}.pem")
+     user        = "${var.guest_ssh_user}"
+     private_key = file("${var.keypair_name}.pem")
   #   #private_key = file("~/.ssh/terraform")
      host        = self.public_ip
    }

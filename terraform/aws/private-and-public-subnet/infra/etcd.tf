@@ -33,21 +33,21 @@ resource "aws_instance" "etcd" {
       Department = "Global Operations"
     }
 
-  # connection {
-  #   type        = "ssh"
-  #   user        = "var.guest_ssh_user"
-  #   private_key = file("${var.default_keypair_name}")
-  #   #private_key = file("~/.ssh/terraform")
-  #   host        = self.private_ip
-  # }
+  connection {
+    type        = "ssh"
+    user        = "${var.guest_ssh_user}"
+    private_key = file("${var.keypair_name}.pem")
+    #private_key = file("~/.ssh/terraform")
+    host        = self.private_ip
+  }
 
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
-  #     "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
-  #     "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
-  #   ]
+  provisioner "remote-exec" {
+    inline = [
+      "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
+      "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
+      "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
+    ]
 
-  # } 
+  } 
 
 }

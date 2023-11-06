@@ -36,26 +36,22 @@ resource "aws_instance" "controller" {
       Department = "Global Operations"
     }
 
-  # connection {
-  #   type        = "ssh"
-  #   user        = "var.guest_ssh_user"
-  #   private_key = file("${var.default_keypair_name}")
-  #   #private_key = file("~/.ssh/terraform")
-  #   host        = self.private_ip
-  # }
+  connection {
+    type        = "ssh"
+    user        = "${var.guest_ssh_user}"
+    private_key = file("${var.keypair_name}.pem")
+    #private_key = file("~/.ssh/terraform")
+    host        = self.private_ip
+  }
 
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
-  #     "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
-  #     "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
-  #   ]
+  provisioner "remote-exec" {
+    inline = [
+      "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
+      "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
+      "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
+    ]
 
-  # }
-
-  # provisioner "local-exec" {
-  #   command = "echo Securiport | sudo chmod 400 ${var.default_keypair_name}"
-  # } 
+  }
 
 }
 
@@ -65,6 +61,7 @@ resource "aws_instance" "controller" {
 
 resource "aws_elb" "kubernetes_api" {
     name = "${var.elb_name}"
+    internal           = true  # Set to true for internal ELB, false for internet-facing ELB
     instances = "${aws_instance.controller.*.id}"
     subnets = ["${aws_subnet.kubernetes-private.id}"]
     cross_zone_load_balancing = true
@@ -79,11 +76,11 @@ resource "aws_elb" "kubernetes_api" {
     }
 
     health_check {
-      healthy_threshold = 2
+      healthy_threshold = 10
       unhealthy_threshold = 2
-      timeout = 15
-      target = "HTTP:8080/healthz"
-      interval = 30
+      timeout = 2
+      target = "TCP:6443"
+      interval = 5
     }
 
     tags = {
@@ -98,7 +95,7 @@ resource "aws_elb" "kubernetes_api" {
 ############
 
 resource "aws_security_group" "kubernetes_api" {
-  vpc_id = "${aws_vpc.kubernetes.id}"
+  vpc_id = var.vpc_kubernetes
   name = "kubernetes-api"
 
   # Allow inbound traffic to the port used by Kubernetes API HTTPS
@@ -108,7 +105,15 @@ resource "aws_security_group" "kubernetes_api" {
     protocol = "TCP"
     cidr_blocks = ["${var.control_cidr}"]
   }
-
+  
+  # Allow ICMP from control host IP
+  ingress {
+    from_port = 8
+    to_port = 0
+    protocol = "icmp"
+    cidr_blocks = ["${var.control_cidr}"]
+  }
+  
   # Allow all outbound traffic
   egress {
     from_port = 0

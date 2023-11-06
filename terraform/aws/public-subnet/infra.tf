@@ -7,7 +7,7 @@ resource "aws_instance" "nfs-server" {
     instance_type = "${var.nfs-instance-type}"
 
     subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.vpc_cidr, 55)}"
+    private_ip = "${cidrhost(var.subnet_cidr, 55)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {
@@ -59,7 +59,7 @@ resource "aws_instance" "smb-server" {
     instance_type = "${var.smb-instance-type}"
 
     subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.vpc_cidr, 56)}"
+    private_ip = "${cidrhost(var.subnet_cidr, 56)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {
@@ -106,7 +106,7 @@ resource "aws_instance" "IICS-SERVER" {
     instance_type = "${var.windows-instance-type}"
 
     subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.vpc_cidr, 60)}"
+    private_ip = "${cidrhost(var.subnet_cidr, 60)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {

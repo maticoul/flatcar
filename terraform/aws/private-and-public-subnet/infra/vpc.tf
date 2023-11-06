@@ -1,105 +1,71 @@
 ############
-## VPC
-############
-
-resource "aws_vpc" "kubernetes" {
-  cidr_block = "${var.vpc_cidr}"
-  enable_dns_hostnames = true
-
-  tags = {
-    Name = "${var.vpc_name}"
-    Owner = "${var.owner}"
-    Department = "Global Operations"
-  }
-}
-
-##########
-# Keypair
-##########
-
-resource "aws_key_pair" "default_keypair" {
-  key_name = "${var.keypair_name}"
-#  public_key = "${var.default_keypair_public_key}"
-  public_key = tls_private_key.rsa.public_key_openssh
-
-  tags = {
-    Name = "${var.vpc_name}"
-    Owner = "${var.owner}"
-    Department = "Global Operations"
-  }
-}
-
-resource "tls_private_key" "rsa" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "local_file" "TF-key" {
-    content  = tls_private_key.rsa.private_key_pem
-    filename = "${var.keypair_name}.pem"
-}
-
-
-############
 ## Subnets
 ############
 
-# Subnet (public)
-resource "aws_subnet" "kubernetes-public" {
-  vpc_id = "${aws_vpc.kubernetes.id}"
-  cidr_block = "${var.subnet-public_cidr}"
+# Subnet (private)
+resource "aws_subnet" "kubernetes-private" {
+  vpc_id = var.vpc_kubernetes
+  cidr_block = "${var.subnet-private_cidr}"
   availability_zone = "${var.zone}"
-  map_public_ip_on_launch = true  # This makes it a private subnet
 
   tags = {
-    Name = "kubernetes-public"
+    Name = "kubernetes-private"
     Owner = "${var.owner}"
     Department = "Global Operations"
   }
 }
 
-resource "aws_internet_gateway" "gw" {
-  vpc_id = "${aws_vpc.kubernetes.id}"
+resource "aws_eip" "kubernetes-eip" {
+  domain = "vpc"
+  #vpc      = true
+
   tags = {
-    Name = "kubernetes-igw"
+    Name = "kubernetes-eip"
     Owner = "${var.owner}"
+    Department = "Global Operations"
   }
 }
 
+resource "aws_nat_gateway" "ngw" {
+  allocation_id = "${aws_eip.kubernetes-eip.id}"
+  subnet_id = var.kubernetes_public
+  tags = {
+    Name = "kubernetes-ngw"
+    Owner = "${var.owner}"
+    Department = "Global Operations"
+  }
+}
 ############
 ## Routing
 ############
 
-resource "aws_route_table" "kubernetes-public" {
-    vpc_id = "${aws_vpc.kubernetes.id}"
+resource "aws_route_table" "kubernetes-private" {
+    vpc_id = var.vpc_kubernetes
 
     # Default route through Internet Gateway
     route {
       cidr_block = "0.0.0.0/0"
-      gateway_id = "${aws_internet_gateway.gw.id}"
+      nat_gateway_id = "${aws_nat_gateway.ngw.id}"
     }
 
     tags = {
-      Name = "kubernetes-public"
+      Name = "kubernetes-private"
       Owner = "${var.owner}"
       Department = "Global Operations"
     }
 }
 
-resource "aws_route_table_association" "kubernetes-public" {
-  subnet_id = "${aws_subnet.kubernetes-public.id}"
-  #gateway_id     = "${aws_internet_gateway.gw.id}"
-  route_table_id = "${aws_route_table.kubernetes-public.id}"
-  
+resource "aws_route_table_association" "kubernetes-private" {
+  subnet_id = "${aws_subnet.kubernetes-private.id}"
+  route_table_id = "${aws_route_table.kubernetes-private.id}"
 }
-
 
 ############
 ## Security
 ############
 
 resource "aws_security_group" "kubernetes" {
-  vpc_id = "${aws_vpc.kubernetes.id}"
+  vpc_id = var.vpc_kubernetes
   name = "kubernetes"
 
   # Allow all outbound

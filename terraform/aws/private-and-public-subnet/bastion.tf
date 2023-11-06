@@ -27,18 +27,18 @@ resource "aws_instance" "bastion-lunix" {
   }
 
     provisioner "file" {
-     source      = "${var.keypair_name}"      # terraform machine
-     destination = "${var.keypair_name}" # remote machine
+     source      = "${var.keypair_name}.pem"      # terraform machine
+     destination = "${var.keypair_name}.pem" # remote machine
   }
     
     provisioner "local-exec" {
-     command = "chmod 400 ${var.keypair_name}"
+     command = "chmod 400 ${var.keypair_name}.pem"
    
    }
     connection {
     type        = "ssh"
     user        = "${var.guest_ssh_user-bastion}"
-    private_key = file("${var.keypair_name}")
+    private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.public_ip
   }
@@ -49,12 +49,11 @@ resource "aws_instance" "bastion-lunix" {
       "sudo apt-add-repository --yes --update ppa:ansible/ansible",
       "sudo apt-get update",
       "sudo apt install ansible -y ",
-      "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
       "sudo apt install unzip",
       "wget https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_amd64.zip",
       "unzip terraform_1.6.1_linux_amd64.zip",
       "sudo mv terraform /usr/bin/",
-      "sudo chmod 400 ${var.keypair_name}",
+      "sudo chmod 400 ${var.keypair_name}.pem",
       
     ]
 

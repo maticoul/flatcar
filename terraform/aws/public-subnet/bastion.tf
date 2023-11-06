@@ -26,13 +26,19 @@ resource "aws_instance" "bastion" {
     }
   }
     provisioner "local-exec" {
-     command = "chmod 400 ${var.keypair_name}"
+     command = "chmod 400 ${var.keypair_name}.pem"
 
    }
+
+   provisioner "file" {
+     source      = "${var.keypair_name}.pem"  # terraform machine
+     destination = "${var.keypair_name}.pem"  # remote machine
+  }
+
     connection {
     type        = "ssh"
     user        = "${var.guest_ssh_user-bastion}"
-    private_key = file("${var.keypair_name}")
+    private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.public_ip
   }
@@ -43,6 +49,7 @@ resource "aws_instance" "bastion" {
       "sudo apt-get update",
       "sudo apt install ansible -y ",
       "sudo apt install unzip",
+   #   "sudo chmod 400 ${var.keypair_name}.pem",
     
     ]
 

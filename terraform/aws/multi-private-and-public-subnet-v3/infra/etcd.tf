@@ -35,7 +35,7 @@ resource "aws_instance" "etcd" {
 
    connection {
      type        = "ssh"
-     user        = "var.guest_ssh_user"
+     user        = "${var.guest_ssh_user}"
      private_key = file("../${var.keypair_name}.pem")
   #   #private_key = file("~/.ssh/terraform")
      host        = self.private_ip

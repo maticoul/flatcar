@@ -10,7 +10,7 @@ resource "aws_instance" "controller" {
     iam_instance_profile = "${aws_iam_instance_profile.kubernetes.id}"
     
     subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.vpc_cidr, 50 + count.index)}"
+    private_ip = "${cidrhost(var.subnet_cidr, 50 + count.index)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     source_dest_check = false # TODO Required??
 
@@ -25,7 +25,7 @@ resource "aws_instance" "controller" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "Bastion-lunix"
+      Name = "preprod-master0-${count.index +1}"
       Department = "Global Operations"
     }
   }
@@ -39,8 +39,8 @@ resource "aws_instance" "controller" {
 
     connection {
      type        = "ssh"
-     user        = "var.guest_ssh_user"
-     private_key = file("../${var.keypair_name}.pem")
+     user        = "${var.guest_ssh_user}"
+     private_key = file("${var.keypair_name}.pem")
   #   #private_key = file("~/.ssh/terraform")
      host        = self.public_ip
    }
@@ -61,9 +61,10 @@ resource "aws_instance" "controller" {
 
 resource "aws_elb" "kubernetes_api" {
     name = "${var.elb_name}"
+    internal           = true  # Set to true for internal ELB, false for internet-facing ELB
     instances = "${aws_instance.controller.*.id}"
     subnets = ["${aws_subnet.kubernetes.id}"]
-    cross_zone_load_balancing = true
+    cross_zone_load_balancing = false
 
     security_groups = ["${aws_security_group.kubernetes_api.id}"]
 
@@ -75,16 +76,17 @@ resource "aws_elb" "kubernetes_api" {
     }
 
     health_check {
-      healthy_threshold = 2
+      healthy_threshold = 10
       unhealthy_threshold = 2
-      timeout = 15
-      target = "HTTP:8080/healthz"
-      interval = 30
+      timeout = 2
+      target = "TCP:6443"
+      interval = 5
     }
 
     tags = {
       Name = "kubernetes"
       Owner = "${var.owner}"
+      Department = "Global Operations"
     }
 }
 
@@ -104,6 +106,13 @@ resource "aws_security_group" "kubernetes_api" {
     cidr_blocks = ["${var.control_cidr}"]
   }
 
+  ingress {
+    from_port = 8
+    to_port = 0
+    protocol = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Allow all outbound traffic
   egress {
     from_port = 0
@@ -115,6 +124,7 @@ resource "aws_security_group" "kubernetes_api" {
   tags = {
     Owner = "${var.owner}"
     Name = "kubernetes-api"
+    Department = "Global Operations"
   }
 }
 

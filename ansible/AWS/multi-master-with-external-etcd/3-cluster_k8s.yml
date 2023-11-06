@@ -286,13 +286,15 @@
       become: yes
       become_method: sudo
 
-    - name: Download helm using get_url
-      become: yes
-      get_url:
-        url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
-        dest: /usr/local/bin
-        mode: 0755
+    - name: Downloading helm 
+      shell: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 
+    - name: Downloading helm 
+      shell: chmod 700 get_helm.sh
+  
+    - name: Downloading helm 
+      shell: ./get_helm.sh
+    
     - name: Downloading kubectl
       become: yes
       get_url:
@@ -300,29 +302,35 @@
         dest: '/usr/local/bin/'
         mode: '+x'
 
-    - name: unzip helm
-      become: yes
-      unarchive:
-        src: /usr/local/bin/helm-v3.12.2-linux-amd64.tar.gz.asc
-        dest: /usr/local/bin/
-        remote_src: yes
-
     - name: Download helmfile using get_url
       become: yes
       get_url:
-        url: https://github.com/helmfile/helmfile/releases/download/v0.155.0/helmfile_0.155.0_linux_amd64.tar.gz
-        dest: /usr/bin
+        url: https://github.com/roboll/helmfile/releases/download/v0.135.0/helmfile_linux_amd64
+        dest: /usr/bin/helmfile
         mode: 0755
-
-    - name: unzip helmfile
-      become: yes
-      unarchive:
-        src: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
-        dest: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
-        remote_src: yes
 
     - name: installing helmfile plugin
       shell: helm plugin install https://github.com/databus23/helm-diff
+
+- name: copying kubeconfig from master01 to controller
+  hosts: master01
+  become: yes
+  tasks:
+
+    - name: Downloading helm
+      shell: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
+    - name: Downloading helm
+      shell: chmod 700 get_helm.sh
+
+    - name: Modify helm file
+      replace:
+        path: "get_helm.sh"
+        regexp: '/usr/local/bin'
+        replace: '{{ DOWNLOAD_DIR }}'
+
+    - name: Downloading helm
+      shell: ./get_helm.sh
 
     - name: create ns apis
       shell: kubectl create ns apis

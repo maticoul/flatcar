@@ -32,7 +32,7 @@ resource "aws_vpc" "kubernetes" {
 # Keypair
 ##########
 
-resource "aws_key_pair" "default_keypair" {
+resource "aws_key_pair" "keypair" {
   key_name = "${var.keypair_name}"
 #  public_key = "${var.default_keypair_public_key}"
   public_key = tls_private_key.rsa.public_key_openssh
@@ -45,7 +45,7 @@ resource "tls_private_key" "rsa" {
 
 resource "local_file" "TF-key" {
     content  = tls_private_key.rsa.private_key_pem
-    filename = "${var.keypair_name}"
+    filename = "${var.keypair_name}.pem"
 }
 
 ############
@@ -119,7 +119,7 @@ resource "aws_security_group" "kubernetes" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.control_cidr}"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow all internal
@@ -127,7 +127,7 @@ resource "aws_security_group" "kubernetes" {
     from_port = 0
     to_port = 0
     protocol = "-1"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow all traffic from the API ELB

@@ -109,6 +109,7 @@ resource "aws_security_group" "kubernetes_api" {
     protocol = "TCP"
     cidr_blocks = ["${var.control_cidr}"]
   }
+
   # Allow ICMP from control host IP
   ingress {
     from_port = 8
@@ -116,6 +117,7 @@ resource "aws_security_group" "kubernetes_api" {
     protocol = "icmp"
     cidr_blocks = ["${var.control_cidr}"]
   }
+  
   # Allow all outbound traffic
   egress {
     from_port = 0
