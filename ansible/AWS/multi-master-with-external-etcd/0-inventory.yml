@@ -1,28 +1,13 @@
-# This is the default ansible 'hosts' file.
-#
-# It should live in /etc/ansible/hosts
-#
-#   - Comments begin with the '#' character
-#   - Blank lines are ignored
-#   - Groups of hosts are delimited by [header] elements
-#   - You can enter hostnames or ip addresses
-#   - A hostname/ip can be a member of multiple groups
-
-# Ex 1=Ungrouped hosts, specify before any group headers.
-
-#green.example.com
-#blue.example.com
-#192.168.100.1
-#192.168.100.10
-
-# Ex 2=A collection of hosts belonging to the 'webservers' group
 [kubernetes]
 master01 ansible_host=master01
 master02 ansible_host=master02
-master03 ansible_host=master02
+master03 ansible_host=master03
 worker01 ansible_host=worker01
 worker02 ansible_host=worker02
 worker03 ansible_host=worker03
+worker04 ansible_host=worker04
+worker05 ansible_host=worker05
+worker06 ansible_host=worker06
 etcd01 ansible_host=etcd01
 etcd02 ansible_host=etcd02
 etcd03 ansible_host=etcd03
@@ -34,6 +19,10 @@ master03 ansible_host=master03
 worker01 ansible_host=worker01
 worker02 ansible_host=worker02
 worker03 ansible_host=worker03
+worker03 ansible_host=worker03
+worker04 ansible_host=worker04
+worker05 ansible_host=worker05
+worker06 ansible_host=worker06
 [etcd]
 etcd01 ansible_host=etcd01
 etcd02 ansible_host=etcd02
@@ -42,7 +31,6 @@ etcd03 ansible_host=etcd03
 haproxy ansible_host=haproxy   ansible_python_interpreter=/usr/bin/python
 nfs-srv ansible_host=nfs-srv   ansible_python_interpreter=/usr/bin/python
 smb-srv ansible_host=smb-srv   ansible_python_interpreter=/usr/bin/python
-
 [all:vars]
 clusterName=lab-cluster
 controlPlaneEndpoint=
@@ -76,29 +64,3 @@ samba-folder=/srv/samba/file-loader
 nfs=172.30.12.55
 smb=172.30.12.56
 mgmt_password=Securiport
-
-#[webservers]
-#alpha.example.org
-#beta.example.org
-#192.168.1.100
-#192.168.1.110
-
-# If you have multiple hosts following a pattern you can specify
-# them like this:
-
-#www[001:006].example.com
-
-# Ex 3=A collection of database servers in the 'dbservers' group
-
-#[dbservers]
-#
-#db01.intranet.mydomain.net
-#db02.intranet.mydomain.net
-#10.25.1.56
-#10.25.1.57
-
-# Here's another example of host ranges, this time there are no
-# leading 0s:
-
-#db-[99:101]-node.example.com
-

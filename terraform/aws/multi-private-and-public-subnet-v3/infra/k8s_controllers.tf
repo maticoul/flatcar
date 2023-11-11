@@ -4,7 +4,8 @@
 
 resource "aws_instance" "controller" {
     count = 3
-    ami = "${lookup(var.amis, var.region)}"
+    ami = var.amis
+    #ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.controller_instance_type}"
 
 #    iam_instance_profile = "${aws_iam_instance_profile.kubernetes.id}"
@@ -36,9 +37,6 @@ resource "aws_instance" "controller" {
       Department = "Global Operations"
     }
    
-   provisioner "local-exec" {
-     command = "sudo cp ../${var.keypair_name}.pem infra/"
-}
    connection {
      type        = "ssh"
      user        = "${var.guest_ssh_user}"
@@ -87,7 +85,7 @@ resource "aws_elb" "kubernetes_api" {
     }
 
     tags = {
-      Name = "kubernetes"
+      Name = "${var.guest_name_prefix}-kubernetes"
       Owner = "${var.owner}"
       Department = "Global Operations"
     }
@@ -99,7 +97,7 @@ resource "aws_elb" "kubernetes_api" {
 ############
 
 resource "aws_security_group" "kubernetes_api" {
-  vpc_id = var.vpc.kubernetes
+  vpc_id = var.vpc_kubernetes
   name = "kubernetes-api"
 
   # Allow inbound traffic to the port used by Kubernetes API HTTPS
@@ -128,7 +126,7 @@ resource "aws_security_group" "kubernetes_api" {
 
   tags = {
     Owner = "${var.owner}"
-    Name = "kubernetes-api"
+    Name = "${var.guest_name_prefix}-kubernetes-api"
     Department = "Global Operations"
   }
 }

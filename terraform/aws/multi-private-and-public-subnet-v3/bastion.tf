@@ -3,8 +3,8 @@
 ####################
 
 resource "aws_instance" "bastion-lunix" {
-    ami = "ami-03f65b8614a860c29"
-    instance_type = "t2.micro"
+    ami = var.ami-bastion-lunix
+    instance_type = var.instance_type-bastion-lunix
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"
     private_ip = "${cidrhost(var.subnet-public_cidr, 55 )}"
@@ -21,20 +21,25 @@ resource "aws_instance" "bastion-lunix" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "Bastion-lunix"
+      Name = "${var.guest_name_prefix}-Bastion-lunix"
       Department = "Global Operations"
     }
   }
 
-    provisioner "file" {
-     source      = "${var.keypair_name}.pem"  # terraform machine
-     destination = "${var.keypair_name}.pem"  # remote machine
-  }
-    
     provisioner "local-exec" {
      command = "chmod 400 ${var.keypair_name}.pem"
-   
    }
+
+    provisioner "file" {
+    source      = "infra"
+    destination = "/home/ubuntu/"
+  }
+
+    provisioner "file" {
+     source      = "${var.keypair_name}.pem"  # terraform machine
+     destination = "infra/${var.keypair_name}.pem"  # remote machine
+  }
+
     connection {
     type        = "ssh"
     user        = "${var.guest_ssh_user-bastion}"
@@ -42,7 +47,6 @@ resource "aws_instance" "bastion-lunix" {
     #private_key = file("~/.ssh/terraform")
     host        = self.public_ip
   }
-
 
   provisioner "remote-exec" {
     inline = [
@@ -53,14 +57,14 @@ resource "aws_instance" "bastion-lunix" {
       "wget https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_amd64.zip",
       "unzip terraform_1.6.1_linux_amd64.zip",
       "sudo mv terraform /usr/bin/",
-      "sudo chmod 400 ${var.keypair_name}.pem",      
+      "sudo chmod 400 infra/${var.keypair_name}.pem"      
     ]
 
   }
 
     tags = {
       Owner = "${var.owner}"
-      Name = "Bastion-lunix"
+      Name = "${var.guest_name_prefix}-Bastion-lunix"
       Department = "Global Operations"
     }
 }
@@ -70,8 +74,8 @@ resource "aws_instance" "bastion-lunix" {
 ############################
 
 resource "aws_instance" "bastion-Windows" {
-    ami = "ami-0fae5ac34f36d5963"
-    instance_type = "t2.medium"
+    ami = var.ami-bastion-windows
+    instance_type = var.instance_type-bastion-windows
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"
     private_ip = "${cidrhost(var.subnet-public_cidr, 56 )}"
@@ -84,7 +88,7 @@ resource "aws_instance" "bastion-Windows" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "Bastion-windows"
+      Name = "${var.guest_name_prefix}-Bastion-windows"
       Department = "Global Operations"
     }
   }
@@ -95,7 +99,7 @@ resource "aws_instance" "bastion-Windows" {
     
     tags = {
       Owner = "${var.owner}"
-      Name = "Bastion-windows"
+      Name = "${var.guest_name_prefix}-Bastion-windows"
       Department = "Global Operations"
     }
 }
@@ -125,7 +129,7 @@ resource "aws_security_group" "bastion" {
 
   tags = {
     Owner = "${var.owner}"
-    Name = "bastion-sg"
+    Name = "${var.guest_name_prefix}-bastion-sg"
     Department = "Global Operations"
   }
 }

@@ -4,7 +4,8 @@
 
 resource "aws_instance" "etcd" {
     count = 3
-    ami = "${lookup(var.amis, var.region)}"
+    ami = var.amis
+    #ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.etcd_instance_type}"
     
     subnet_id = "${aws_subnet.kubernetes-private[count.index].id}"
@@ -36,7 +37,7 @@ resource "aws_instance" "etcd" {
    connection {
      type        = "ssh"
      user        = "${var.guest_ssh_user}"
-     private_key = file("../${var.keypair_name}.pem")
+     private_key = file("${var.keypair_name}.pem")
   #   #private_key = file("~/.ssh/terraform")
      host        = self.private_ip
    }

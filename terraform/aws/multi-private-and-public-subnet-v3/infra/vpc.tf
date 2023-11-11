@@ -4,7 +4,7 @@
 
 resource "aws_subnet" "kubernetes-private" {
  count      = 3
- vpc_id = var.vpc.kubernetes
+ vpc_id = var.vpc_kubernetes
  cidr_block = var.private_subnet_cidr[count.index]
  availability_zone = var.azs[count.index]
 
@@ -40,7 +40,7 @@ resource "aws_nat_gateway" "ngw" {
 ############
 
 resource "aws_route_table" "kubernetes-private" {
-    vpc_id = var.vpc.kubernetes
+    vpc_id = var.vpc_kubernetes
 
     # Default route through Internet Gateway
     route {
@@ -118,7 +118,7 @@ resource "aws_security_group" "kubernetes" {
   }
   tags = {
     Owner = "${var.owner}"
-    Name = "kubernetes"
+    Name = "${var.guest_name_prefix}-kubernetes"
     Department = "Global Operations"
   }
 }

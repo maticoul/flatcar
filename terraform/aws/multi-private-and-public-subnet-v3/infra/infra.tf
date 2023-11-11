@@ -14,6 +14,12 @@ resource "aws_instance" "nfs-server" {
     volume_type           = "gp2"
     volume_size           = var.disk_nfs
     delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "${var.guest_name_prefix}-nfs-server"
+      Department = "Global Operations"
+    }
   }
 
     availability_zone = "${var.azs[0]}"
@@ -22,7 +28,7 @@ resource "aws_instance" "nfs-server" {
 
     connection {
     type        = "ssh"
-    user        = "${var.guest_ssh_user-bastion}"
+    user        = "${var.guest_ssh_user-infra}"
     private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.private_ip
@@ -45,7 +51,7 @@ resource "aws_instance" "nfs-server" {
   }
     tags = {
       Owner = "${var.owner}"
-      Name = "nfs-server"
+      Name = "${var.guest_name_prefix}-nfs-server"
       Department = "Global Operations"
     }
 }
@@ -66,6 +72,12 @@ resource "aws_instance" "smb-server" {
     volume_type           = "gp2"
     volume_size           = var.disk_smb
     delete_on_termination = true
+
+    tags = {
+      Owner = "${var.owner}"
+      Name = "${var.guest_name_prefix}-smb-server"
+      Department = "Global Operations"
+    }
   }
 
     availability_zone = "${var.azs[0]}"
@@ -74,7 +86,7 @@ resource "aws_instance" "smb-server" {
 
     connection {
     type        = "ssh"
-    user        = "${var.guest_ssh_user-bastion}"
+    user        = "${var.guest_ssh_user-infra}"
     private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.private_ip
@@ -91,7 +103,7 @@ resource "aws_instance" "smb-server" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "smb-server"
+      Name = "${var.guest_name_prefix}-smb-server"
       Department = "Global Operations"
     }
 }
@@ -116,7 +128,7 @@ resource "aws_instance" "IICS-SERVER" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "iics-server"
+      Name = "${var.guest_name_prefix}-iics-server"
       Department = "Global Operations"
     }
   }
@@ -127,7 +139,7 @@ resource "aws_instance" "IICS-SERVER" {
 
     tags = {
       Owner = "${var.owner}"
-      Name = "IICS-SERVER"
+      Name = "${var.guest_name_prefix}-IICS-SERVER"
       Department = "Global Operations"
     }
 }
@@ -166,7 +178,7 @@ resource "aws_security_group" "infra" {
 
   tags = {
     Owner = "${var.owner}"
-    Name = "infra-sg"
+    Name = "${var.guest_name_prefix}-infra-sg"
     Department = "Global Operations"
   }
 }

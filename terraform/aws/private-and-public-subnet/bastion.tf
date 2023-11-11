@@ -1,10 +1,10 @@
-#########################
+###################
 # Bastion instances
-#########################
+###################
 
 resource "aws_instance" "bastion-lunix" {
-    ami = "ami-03f65b8614a860c29"
-    instance_type = "t2.micro"
+    ami = var.ami-bastion-lunix
+    instance_type = var.instance_type-bastion-lunix
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"
     private_ip = "${cidrhost(var.subnet-public_cidr, 55 )}"
@@ -66,13 +66,13 @@ resource "aws_instance" "bastion-lunix" {
     }
 }
 
-#########################
+###########################
 # Bastion Windows instances
-#########################
+###########################
 
 resource "aws_instance" "bastion-Windows" {
-    ami = "ami-0fae5ac34f36d5963"
-    instance_type = "t2.medium"
+    ami = var.ami-bastion-windows
+    instance_type = var.instance_type-bastion-windows
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"
     private_ip = "${cidrhost(var.subnet-public_cidr, 56 )}"
@@ -130,5 +130,3 @@ resource "aws_security_group" "bastion" {
     Department = "Global Operations"
   }
 }
-
-
