@@ -6,7 +6,7 @@
 #
 
 resource "aws_iam_role" "apis-cluster" {
-  name = "apis-cluster"
+  name = "iam-role-${var.cluster-name}"
 
   assume_role_policy = <<POLICY
 {
@@ -25,7 +25,7 @@ POLICY
 
 tags = {
     Owner = "${var.owner}"
-    Name = "eks-iam_role-${var.cluster-name}"
+    Name = "eks-iam_role-${var.cluster-name}-cluster"
     Department = "Global Operations"
   }
 }
@@ -41,7 +41,7 @@ resource "aws_iam_role_policy_attachment" "apis-cluster-AmazonEKSVPCResourceCont
 }
 
 resource "aws_security_group" "apis-cluster" {
-  name        = "apis-cluster"
+  name        = "eks-${var.cluster-name}-cluster-sg"
   description = "Cluster communication with worker nodes"
   vpc_id      = "${aws_vpc.kubernetes.id}"
  
@@ -62,7 +62,7 @@ resource "aws_security_group" "apis-cluster" {
 
   tags = {
     Owner = "${var.owner}"
-    Name = "eks-${var.cluster-name}-sg"
+    Name = "eks-${var.cluster-name}-cluster-sg"
     Department = "Global Operations"
   }
 }

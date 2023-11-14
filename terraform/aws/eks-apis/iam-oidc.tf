@@ -9,7 +9,7 @@ resource "aws_iam_openid_connect_provider" "eks" {
 
   tags = {
     Owner = "${var.owner}"
-    Name = "eks-iam_openid_connect_provider"
+    Name = "eks-iam_openid_connect_provider-${var.cluster-name}"
     Department = "Global Operations"
   }
 }

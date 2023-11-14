@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "csi" {
+data "aws_iam_policy_document" "csi-ebs" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
@@ -18,11 +18,11 @@ data "aws_iam_policy_document" "csi" {
 
 resource "aws_iam_role" "eks_ebs_csi_driver" {
   assume_role_policy = data.aws_iam_policy_document.csi.json
-  name               = "eks-ebs-csi-driver"
+  name               = "iam-role-eks-ebs-csi-driver-${var.cluster-name}"
 
   tags = {
     Owner = "${var.owner}"
-    Name = "iam-role-eks_ebs_csi_driver"
+    Name = "iam-role-eks_ebs_csi_drive-${var.cluster-name}"
     Department = "Global Operations"
   }
 }
@@ -75,3 +75,38 @@ resource "aws_iam_role_policy_attachment" "amazon_ebs_csi_driver" {
 #   role       = aws_iam_role.eks_ebs_csi_driver.name
 #   policy_arn = aws_iam_policy.eks_ebs_csi_driver_kms.arn
 # }
+
+
+data "aws_iam_policy_document" "csi-efs" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:efs-csi-controller-sa"]
+    }
+
+    principals {
+      identifiers = [aws_iam_openid_connect_provider.eks.arn]
+      type        = "Federated"
+    }
+  }
+}
+
+resource "aws_iam_role" "eks_efs_csi_driver" {
+  assume_role_policy = data.aws_iam_policy_document.csi-efs.json
+  name               = "iam-role-eks-efs-csi-driver-${var.cluster-name}"
+
+  tags = {
+    Owner = "${var.owner}"
+    Name = "iam-role-eks_efs_csi_drive-${var.cluster-name}"
+    Department = "Global Operations"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "amazon_efs_csi_driver" {
+  role       = aws_iam_role.eks_efs_csi_driver.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+}

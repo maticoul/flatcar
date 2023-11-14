@@ -5,7 +5,7 @@
 #
 
 resource "aws_iam_role" "apis-node" {
-  name = "apis-node"
+  name = "iam-role-${var.cluster-name}-node"
 
   assume_role_policy = <<POLICY
 {
@@ -86,7 +86,7 @@ resource "aws_eks_node_group" "apis" {
 }
 
 resource "aws_launch_template" "eks-apis" {
-  name = "eks-apis"
+  name = "launch_template-eks-${var.cluster-name}"
   description    = "First version"
   # name_prefix   = "eks-apis"
   # instance_type = "t2.medium"
@@ -113,6 +113,7 @@ resource "aws_eks_addon" "efs-csi-driver" {
   cluster_name                = aws_eks_cluster.apis.name
   addon_name                  = "aws-efs-csi-driver"
   addon_version               = "v1.5.8-eksbuild.1" #e.g., previous version v1.9.3-eksbuild.3 and the new version is v1.10.1-eksbuild.1
+  service_account_role_arn = aws_iam_role.eks_efs_csi_driver.arn
   resolve_conflicts_on_update = "PRESERVE"
 }
 

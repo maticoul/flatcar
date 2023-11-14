@@ -5,7 +5,7 @@
 # The following Roles and Policy are mostly for future use
 
 resource "aws_iam_role" "kube" {
-  name = "kube"
+  name = "iam-role-k8s-controller"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -20,11 +20,16 @@ resource "aws_iam_role" "kube" {
   ]
 }
 EOF
+   tags = {
+      Owner = "${var.owner}"
+      Name = "iam_role-kube-controller"
+      Department = "Global Operations"
+    }
 }
 
 # Role policy
 resource "aws_iam_role_policy" "kube" {
-  name = "kube"
+  name = "iam-role-policy-kube-controller"
   role = "${aws_iam_role.kube.id}"
   policy = <<EOF
 {
@@ -53,22 +58,26 @@ resource "aws_iam_role_policy" "kube" {
   ]
 }
 EOF
-}
+ }
 
 
-# IAM Instance Profile for Controller
+# # IAM Instance Profile for Controller
 resource  "aws_iam_instance_profile" "kube" {
- name = "kube"
+ name = "iam-instance-profil-kube-controller"
  role = "${aws_iam_role.kube.name}" 
+ tags = {
+      Owner = "${var.owner}"
+      Name = "aws_iam_role-k8s-controller"
+      Department = "Global Operations"
+    }
 }
+
 
 
 ## create IAM policies and roles for the "csi-driver-iam
-
-
 resource "aws_iam_policy" "csi_driver_iam_policy" {
-  name        = "csi-driver-iam-policy"
-  description = "IAM policy for csi-driver-iam"
+  name        = "csi-ebs-driver-iam-policy-k8s"
+  description = "IAM policy for csi-driver-iam for ebs k8s cluster"
 
   policy = <<EOF
 {
@@ -99,10 +108,15 @@ resource "aws_iam_policy" "csi_driver_iam_policy" {
   ]
 }
 EOF
+ tags = {
+      Owner = "${var.owner}"
+      Name = "csi-ebs-driver-iam-policy-k8s"
+      Department = "Global Operations"
+    }
 }
 
 resource "aws_iam_role" "csi_driver_iam_role" {
-  name               = "csi-driver-iam-role"
+  name               = "csi-ebs-driver-iam-role-k8s"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -117,6 +131,12 @@ resource "aws_iam_role" "csi_driver_iam_role" {
   ]
 }
 EOF
+
+  tags = {
+      Owner = "${var.owner}"
+      Name = "csi-ebs-driver-iam-role-k8s"
+      Department = "Global Operations"
+    }
 }
 
 resource "aws_iam_role_policy_attachment" "csi_driver_iam_attachment" {
