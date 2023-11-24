@@ -124,11 +124,6 @@ resource "vsphere_virtual_machine" "nfs-server" {
       echo ${var.guest_ssh_password} | ssh-copy-id -i ~/.ssh/id_rsa.pub ${var.guest_ssh_user}@${var.guest_host_nfs-srv}
     EOF
   }
-
-  # provisioner "local-exec" {
-  #   command = "ssh-copy-id -i ${var.guest_ssh_user}@${self.guest_ip_addresses[0]}"
-  # }
-
   }
 
 
@@ -286,7 +281,8 @@ resource "vsphere_virtual_machine" "haproxy" {
     inline = [
       "echo ${var.guest_ssh_password} | sudo -S apt-get update && sudo -S apt-get -qq install python -y",
       "echo ${var.guest_ssh_password} | sudo -S apt-get install -y haproxy",
-      "echo ${var.guest_ssh_password} | sudo -S systemctl restart haproxy"
+      "echo ${var.guest_ssh_password} | sudo -S systemctl restart haproxy",
+      "sudo mv template/hosts /etc/hosts",
       ]
   }
 

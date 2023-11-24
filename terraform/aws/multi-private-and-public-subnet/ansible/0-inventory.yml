@@ -1,0 +1,57 @@
+[kubernetes]
+master01 ansible_host=master01
+master02 ansible_host=master02
+master03 ansible_host=master03
+worker01 ansible_host=worker01
+worker02 ansible_host=worker02
+worker03 ansible_host=worker03
+worker04 ansible_host=worker04
+worker05 ansible_host=worker05
+worker06 ansible_host=worker06
+etcd01 ansible_host=etcd01
+etcd02 ansible_host=etcd02
+etcd03 ansible_host=etcd03
+[masters]
+master01 ansible_host=master01
+master02 ansible_host=master02
+master03 ansible_host=master03
+[workers]
+worker01 ansible_host=worker01
+worker02 ansible_host=worker02
+worker03 ansible_host=worker03
+worker03 ansible_host=worker03
+worker04 ansible_host=worker04
+worker05 ansible_host=worker05
+worker06 ansible_host=worker06
+[etcd]
+etcd01 ansible_host=etcd01
+etcd02 ansible_host=etcd02
+etcd03 ansible_host=etcd03
+[infrastructure]
+smb-srv ansible_host=smb-srv   ansible_python_interpreter=/usr/bin/python
+[all:vars]
+clusterName=lab-cluster
+ansible_ssh_private_key_file=/home/ubuntu/infra/k8s-apis.pem
+HOST0=172.30.12.10
+HOST1=172.30.13.11
+HOST2=172.30.14.12
+NAME0=etcd01
+NAME1=etcd02
+NAME2=etcd03
+HOSTS=["{{ HOST0 }}", "{{ HOST1 }}", "{{ HOST2 }}"]
+NAMES=["{{ NAME0 }}", "{{ NAME1 }}", "{{ NAME2 }}"]
+ansible_become=true
+mgmt_user=ubuntu
+ansible_user=core
+ansible_python_interpreter=/opt/bin/python/bin/pypy
+CNI_VERSION=v1.3.0
+CRICTL_VERSION=v1.26.0
+RELEASE_VERSION=v0.15.1
+DOWNLOAD_DIR=/opt/bin
+RELEASE=v1.26.5
+cidr=192.168.0.0/16
+podSubnet=192.168.0.0/16
+shared=/mnt/nfs-server/
+samba-folder=/srv/samba/file-loader
+smb=172.30.12.56
+mgmt_password=Securiport

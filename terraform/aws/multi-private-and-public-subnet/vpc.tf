@@ -94,3 +94,75 @@ resource "aws_route_table_association" "kubernetes-public" {
   route_table_id = "${aws_route_table.kubernetes-public.id}"
   
 }
+
+############
+## Security
+############
+
+resource "aws_security_group" "lunix" {
+  vpc_id = "${aws_vpc.kubernetes.id}"
+  description =  "allow from and to lunix ec2 traffic"
+  name = "${var.guest_name_prefix}-bastion-lunix-sg"
+
+  # Allow inbound traffic to the port used by Kubernetes API HTTPS
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Owner = "${var.owner}"
+    Name = "${var.guest_name_prefix}-bastion-lunix-sg"
+    Department = "Global Operations"
+  }
+}
+
+resource "aws_security_group" "windows" {
+  vpc_id = "${aws_vpc.kubernetes.id}"
+  description =  "allow RDP traffic"
+  name = "${var.guest_name_prefix}-bastion-windows-sg"
+
+  # Allow inbound traffic to the port used by Kubernetes API HTTPS
+  ingress {
+    from_port = 3389
+    to_port = 3389
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Owner = "${var.owner}"
+    Name = "${var.guest_name_prefix}-bastion-windows-sg"
+    Department = "Global Operations"
+  }
+}
+
+
+############
+## Output
+############
+
+output "vpc_info" {
+  value = {
+    subnet_public = "${aws_subnet.kubernetes-public.id}"
+    vpc_kubernetes = "${aws_vpc.kubernetes.id}"
+  }
+}

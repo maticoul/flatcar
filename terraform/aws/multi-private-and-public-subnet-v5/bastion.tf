@@ -11,7 +11,7 @@ resource "aws_instance" "bastion-lunix" {
     #associate_public_ip_address = false # Instances have public, dynamic IP
 
     availability_zone = "${var.azs.0}"
-    vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
+    vpc_security_group_ids = ["${aws_security_group.lunix.id}"]
     key_name = "${var.keypair_name}"
     
     root_block_device {
@@ -26,13 +26,28 @@ resource "aws_instance" "bastion-lunix" {
     }
   }
 
-    provisioner "local-exec" {
-     command = "chmod 400 ${var.keypair_name}.pem"
-   }
+    provisioner "local-exec" { 
+      command = <<EOF
+      chmod 400 ${var.keypair_name}.pem
+      terraform output vpc_info  >> infra/terraform.tfvars
+      terraform output Security-groupe >> infra/terraform.tfvars
+      sed -i 's/"vpc_kubernetes"/vpc_kubernetes/g' infra/terraform.tfvars
+      sed -i 's/"subnet_public"/subnet_public/g' infra/terraform.tfvars
+      sed -i 's/"lunix_sg"/lunix_sg/g' infra/terraform.tfvars
+      sed -i 's/"windows_sg"/windows_sg/g' infra/terraform.tfvars
+      sed -i 's/{/ /g' infra/terraform.tfvars
+      sed -i 's/}/ /g' infra/terraform.tfvars
+    EOF
+    }
 
     provisioner "file" {
     source      = "infra"
     destination = "/home/ubuntu/"
+  }
+
+    provisioner "file" {
+    source      = "ansible"
+    destination = "/home/ubuntu/infra/"
   }
 
     provisioner "file" {
@@ -57,7 +72,11 @@ resource "aws_instance" "bastion-lunix" {
       "wget https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_amd64.zip",
       "unzip terraform_1.6.1_linux_amd64.zip",
       "sudo mv terraform /usr/bin/",
-      "sudo chmod 400 infra/${var.keypair_name}.pem"      
+      "sudo mv infra/ansible/template/hosts /etc/hosts",
+      "sudo chmod 400 infra/${var.keypair_name}.pem",
+      "sudo apt install dos2unix",
+      "dos2unix /home/ubuntu/infra/deploy.sh",
+    #  "sh /home/ubuntu/infra/deploy.sh"
     ]
 
   }
@@ -94,7 +113,7 @@ resource "aws_instance" "bastion-Windows" {
   }
 
     availability_zone = "${var.azs.0}"
-    vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
+    vpc_security_group_ids = ["${aws_security_group.windows.id}"]
     key_name = "${var.keypair_name}"
     
     tags = {
@@ -103,35 +122,4 @@ resource "aws_instance" "bastion-Windows" {
       Department = "Global Operations"
     }
 }
-############
-## Security
-############
-
-resource "aws_security_group" "bastion" {
-  vpc_id = "${aws_vpc.kubernetes.id}"
-  name = "bastion-sg"
-
-  # Allow inbound traffic to the port used by Kubernetes API HTTPS
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "TCP"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Allow all outbound traffic
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-bastion-sg"
-    Department = "Global Operations"
-  }
-}
-
 

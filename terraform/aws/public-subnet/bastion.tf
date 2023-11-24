@@ -24,11 +24,13 @@ resource "aws_instance" "bastion" {
       Name = "Bastion-lunix"
       Department = "Global Operations"
     }
-  }
-    provisioner "local-exec" {
-     command = "chmod 400 ${var.keypair_name}.pem"
 
-   }
+  }
+
+    provisioner "file" {
+    source      = "ansible"
+    destination = "/home/ubuntu/"
+  }
 
    provisioner "file" {
      source      = "${var.keypair_name}.pem"  # terraform machine
@@ -49,6 +51,11 @@ resource "aws_instance" "bastion" {
       "sudo apt-get update",
       "sudo apt install ansible -y ",
       "sudo apt install unzip",
+      "sudo mv /ansible/template/hosts /etc/hosts",
+      "sudo chmod 400 ${var.keypair_name}.pem",
+      "sudo apt install dos2unix",
+      "dos2unix /home/ubuntu/ansible/deploy.sh",
+      "sh /home/ubuntu/deploy.sh"
    #   "sudo chmod 400 ${var.keypair_name}.pem",
     
     ]

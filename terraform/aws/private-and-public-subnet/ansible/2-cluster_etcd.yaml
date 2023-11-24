@@ -18,7 +18,7 @@
         systemctl daemon-reload
         systemctl restart kubelet
         systemctl status kubelet
-  
+
 - name: updates HOST0, HOST1 et HOST2
   hosts: etcd01
   tasks:
@@ -67,7 +67,7 @@
         path: /tmp/{{ HOST2 }}/kubeadmcfg.yaml
         regexp: 'name: {{ HOST2 }}'
         replace: 'name: {{ NAME2 }}'
-   
+
     - name: Remplacer la valeur dans le fichier
       replace:
         path: /tmp/{{ HOST1 }}/kubeadmcfg.yaml
@@ -193,7 +193,7 @@
     - name: Copy the archive of PKI files to the controller
       fetch:
         src: /tmp/{{ HOST2 }}/etcd03.tar
-        dest: /home/{{ ansible_user }}/
+        dest: /home/{{ mgmt_user }}/
         flat: yes
 
     - name: Archive Kubernetes PKI Files etcd02
@@ -204,7 +204,7 @@
     - name: Copy the archive of PKI files to the controller
       fetch:
         src: /tmp/{{ HOST1 }}/etcd02.tar
-        dest: /home/{{ ansible_user }}/
+        dest: /home/{{ mgmt_user }}/
         flat: yes
 
 - name: pki directory
@@ -221,13 +221,14 @@
 
     - name: Copy the archive of PKI files in etcd03
       copy:
-        src: /home/securiport/etcd03.tar
+        src: /home/{{ mgmt_user }}/etcd03.tar
         dest: /home/{{ ansible_user }}/
 
     - name: Extract the archive of PKI files in kubernetes/pki
       unarchive:
         src:  /home/{{ ansible_user }}/etcd03.tar
         dest: /etc/kubernetes/
+        remote_src: yes
 
     - name: Copy kubeadmcfg.yaml file
       copy:
@@ -252,13 +253,14 @@
 
     - name: Copy the archive of PKI files in the etcd02
       copy:
-        src: /home/{{ ansible_user }}/etcd02.tar
+        src: /home/{{ mgmt_user }}/etcd02.tar
         dest: /home/{{ ansible_user }}/
 
     - name: Extract the archive of PKI files in kubernetes/pki
       unarchive:
         src:  /home/{{ ansible_user }}/etcd02.tar
         dest: /etc/kubernetes/
+        remote_src: yes
 
     - name: Copy kubeadmcfg.yaml file
       copy:

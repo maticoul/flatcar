@@ -5,6 +5,8 @@
       file:
         path: /tmp/master01/pki/etcd/
         state: directory
+        owner: "{{ mgmt_user }}"
+        group: "{{ mgmt_user }}"
         mode: "0755"
 
 - name: Copy certs to controller
@@ -50,7 +52,7 @@
         owner: root
         group: root
         mode: '0755'
-        
+
     - name: pull images
       become: yes
       command:
@@ -124,7 +126,7 @@
               # Note: The ipPools section cannot be modified post-install.
               ipPools:
               - blockSize: 26
-                cidr: {{ cidr }} 
+                cidr: {{ cidr }}
                 encapsulation: VXLANCrossSubnet
                 natOutgoing: Enabled
                 nodeSelector: all()
@@ -136,19 +138,9 @@
         content: "{{ calico_content }}"
         dest: /home/{{ ansible_user }}/calico.yaml
 
-    - name: Downloading calico using get_url
-      become: yes
-      get_url:
-        url: https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/custom-resources.yaml
-        dest: /home/{{ ansible_user }}/
-
     - name: install Tigera
       become: yes
       command: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/tigera-operator.yaml
-
-    - name: install Calico
-      become: yes
-      command: kubectl create -f /home/{{ ansible_user }}/custom-resources.yaml
 
     - name: install Calico
       become: yes
@@ -213,7 +205,7 @@
       copy:
         src: /tmp/master01_kubernetes.tar
         dest: /home/{{ ansible_user }}/
-    
+
     - name: Extract the archive files in kubernetes
       unarchive:
         src:  /home/{{ ansible_user }}/master01_kubernetes.tar
@@ -253,7 +245,7 @@
 
     - name: join cluster
       shell: "{{ hostvars['master01'].join_command }} --control-plane  --ignore-preflight-errors all  >> masters_joined.txt"
-      
+
 - name: Join workers
   hosts: workers
   become: yes
@@ -262,45 +254,19 @@
       shell: "{{ hostvars['master01'].join_command }} --ignore-preflight-errors all  >> masters_joined.txt"
 
 - name: copying kubeconfig from master01 to controller
-  hosts: haproxy
-  become: yes
-  tasks:
-    - name: creating $HOME/.kube folder
-      become: yes
-      file:
-        path: /home/{{ ansible_user }}/.kube
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: '0755'
-
-    - name: copy file admin.conf
-      become: yes
-      fetch:
-        src: /etc/kubernetes/admin.conf
-        dest: /home/{{ ansible_user }}/config
-        flat: yes
-      delegate_to: master01
-    - name: copy file admin.conf
-      become: yes
-      copy:
-        src: /home/{{ ansible_user }}/config
-        dest: /home/{{ ansible_user }}/.kube/config
-
-- name: copying kubeconfig from master01 to controller
   hosts: localhost
   become: yes
   tasks:
     - name: creating $HOME/.kube folder
       become: yes
       file:
-        path: /home/{{ ansible_user }}/.kube
+        path: /home/{{ mgmt_user }}/.kube
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ mgmt_user }}"
+        group: "{{ mgmt_user }}"
         mode: '0755'
 
-    - name: creating $HOME/.kube folder
+    - name: creating /root/.kube folder
       become: yes
       file:
         path: /root/.kube
@@ -309,40 +275,42 @@
         group: root
         mode: '0755'
 
-    - name: copy file admin.conf
+    - name: copy kubeconf file from master01 to controller
       become: yes
       fetch:
         src: /etc/kubernetes/admin.conf
-        dest: /home/{{ ansible_user }}/config
+        dest: /home/{{ mgmt_user }}/config
         flat: yes
       delegate_to: master01
 
-    - name: copy file admin.conf
+    - name: copy kubeconf file to .kube/
       become: yes
       copy:
-        src: /home/{{ ansible_user }}/config
-        dest: /home/{{ ansible_user }}/.kube/config
+        src: /home/{{ mgmt_user }}/config
+        dest: /home/{{ mgmt_user }}/.kube/config
 
-    - name: copy file admin.conf
+    - name: copy file admin.conf to root
       become: yes
       copy:
-        src: /home/{{ ansible_user }}/config
+        src: /home/{{ mgmt_user }}/config
         dest: /root/.kube/config
 
-    - name: installing git 
+    - name: installing git
       apt:
         name: git
         state: present
       become: yes
       become_method: sudo
 
-    - name: Download helm using get_url 
-      become: yes
-      get_url:
-        url: https://github.com/helm/helm/releases/download/v3.12.2/helm-v3.12.2-linux-amd64.tar.gz.asc
-        dest: /usr/local/bin
-        mode: 0755
+    - name: Downloading helm 
+      shell: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 
+    - name: Downloading helm 
+      shell: chmod 700 get_helm.sh
+  
+    - name: Downloading helm 
+      shell: ./get_helm.sh
+    
     - name: Downloading kubectl
       become: yes
       get_url:
@@ -350,47 +318,59 @@
         dest: '/usr/local/bin/'
         mode: '+x'
 
-    - name: unzip helm
-      become: yes
-      unarchive:
-        src: /usr/local/bin/helm-v3.12.2-linux-amd64.tar.gz.asc
-        dest: /usr/local/bin/
-        remote_src: yes
-    
     - name: Download helmfile using get_url
       become: yes
       get_url:
-        url: https://github.com/helmfile/helmfile/releases/download/v0.155.0/helmfile_0.155.0_linux_amd64.tar.gz
-        dest: /usr/bin
+        url: https://github.com/roboll/helmfile/releases/download/v0.135.0/helmfile_linux_amd64
+        dest: /usr/bin/helmfile
         mode: 0755
 
-    - name: unzip helmfile
-      become: yes
-      unarchive:
-        src: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
-        dest: /usr/bin/helmfile_0.155.0_linux_amd64.tar.gz
-        remote_src: yes
-
-    - name: installing helmfile plugin 
+    - name: installing helmfile plugin
       shell: helm plugin install https://github.com/databus23/helm-diff
 
-    - name: create ns apis
+- name: copying kubeconfig from master01 to controller
+  hosts: master01
+  become: yes
+  tasks:
+
+    - name: Downloading helm
+      shell: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
+    - name: Downloading helm
+      shell: chmod 700 get_helm.sh
+
+    - name: Modify helm file
+      replace:
+        path: "get_helm.sh"
+        regexp: '/usr/local/bin'
+        replace: '{{ DOWNLOAD_DIR }}'
+
+    - name: Downloading helm
+      shell: ./get_helm.sh
+
+    - name: creating ns apis
       shell: kubectl create ns apis
 
     - name: creating smbcreds
-      shell: kubectl create secret generic smbcreds --from-literal=username={{ ansible_user }} --from-literal=password={{ ansible_password }} -n apis
+      shell: kubectl create secret generic smbcreds --from-literal=username={{ mgmt_user }} --from-literal=password={{ mgmt_password }} -n apis
 
-    - name: add csi driver nfs repo
-      shell: helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-
-    - name: installing csi driver nfs 
-      shell: helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server={{ nfs }} --set nfs.path={{ nfs-folder }}/ -n kube-system
-
-    - name: add csi driver smb repo
+    - name: adding csi driver ebs repo
+      shell: helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+      
+    - name: adding csi driver efs repo
+      shell: helm repo addaws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+    
+    - name: adding csi driver smb repo
       shell: helm repo add csi-driver-smb https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+
+    - name: updating helm repo
+      shell: helm repo update
+
+    - name: installing csi driver ebs
+      shell: helm install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver --version 2.24.1
+
+    - name: installing csi driver ebs
+      shell: helm install aws-efs-csi-driver --namespace kube-system aws-efs-csi-driver/aws-efs-csi-driver --version 2.5.1
 
     - name: installing csi driver smb
       shell: helm install csi-driver-smb csi-driver-smb/csi-driver-smb -n kube-system --version v1.11.0
-
-
-    

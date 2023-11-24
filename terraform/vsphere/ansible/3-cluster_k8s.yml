@@ -274,6 +274,15 @@
         group: "{{ ansible_user }}"
         mode: '0755'
 
+    - name: creating /root/.kube folder
+      become: yes
+      file:
+        path: /root/.kube
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
     - name: copy file admin.conf
       become: yes
       fetch:
@@ -281,11 +290,18 @@
         dest: /home/{{ ansible_user }}/config
         flat: yes
       delegate_to: master01
+
     - name: copy file admin.conf
       become: yes
       copy:
         src: /home/{{ ansible_user }}/config
         dest: /home/{{ ansible_user }}/.kube/config
+
+    - name: copy file admin.conf
+      become: yes
+      copy:
+        src: /home/{{ ansible_user }}/config
+        dest: /root/.kube/config
 
 - name: copying kubeconfig from master01 to controller
   hosts: localhost
