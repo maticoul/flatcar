@@ -30,11 +30,8 @@ resource "aws_instance" "bastion-lunix" {
       command = <<EOF
       chmod 400 ${var.keypair_name}.pem
       terraform output vpc_info  >> infra/terraform.tfvars
-      terraform output Security-groupe >> infra/terraform.tfvars
-      sed -i 's/"vpc_kubernetes"/vpc_kubernetes/g' infra/terraform.tfvars
-      sed -i 's/"subnet_public"/subnet_public/g' infra/terraform.tfvars
-      sed -i 's/"lunix_sg"/lunix_sg/g' infra/terraform.tfvars
-      sed -i 's/"windows_sg"/windows_sg/g' infra/terraform.tfvars
+      sed -i 's/  "vpc_kubernetes"/vpc_kubernetes/g' infra/terraform.tfvars
+      sed -i 's/  "subnet_public"/subnet_public/g' infra/terraform.tfvars
       sed -i 's/{/ /g' infra/terraform.tfvars
       sed -i 's/}/ /g' infra/terraform.tfvars
     EOF
@@ -76,7 +73,7 @@ resource "aws_instance" "bastion-lunix" {
       "sudo chmod 400 infra/${var.keypair_name}.pem",
       "sudo apt install dos2unix",
       "dos2unix /home/ubuntu/infra/deploy.sh",
-    #  "sh /home/ubuntu/infra/deploy.sh"
+      "sh /home/ubuntu/infra/deploy.sh"
     ]
 
   }

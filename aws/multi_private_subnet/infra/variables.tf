@@ -54,7 +54,7 @@ variable "ami_iics" {
 
 variable amis {
   description = "Default AMIs to use for nodes depending on the region"
-  type = map
+#  type = map
   default = ""
   #{
   #   ap-northeast-1 = "ami-0567c164"

@@ -8,8 +8,6 @@ resource "aws_instance" "controller" {
     #ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.controller_instance_type}"
 
-    iam_instance_profile = "${aws_iam_instance_profile.kube.id}"
-
     subnet_id = element(aws_subnet.kubernetes-private[*].id, count.index)   # "${aws_subnet.kubernetes-private[count.index].id}"
     private_ip = "${cidrhost(var.private_subnet_cidr[count.index], 50 + count.index)}"
     associate_public_ip_address = false # Instances have public, dynamic IP
@@ -28,7 +26,7 @@ resource "aws_instance" "controller" {
   }
 
     availability_zone = "${var.azs[count.index]}"
-    vpc_security_group_ids = ["${aws_security_group.kubernetes.id}"]
+    vpc_security_group_ids = ["${aws_security_group.kubernetes-master.id}"]
     key_name = "${var.keypair_name}"
 
     tags = {
@@ -37,16 +35,11 @@ resource "aws_instance" "controller" {
       Department = "Global Operations"
     }
 
-   provisioner "local-exec" { 
-      command = <<EOF
-      terraform output controlPlane  >> controlPlane.yml
-      sed -i 's/"controlPlaneEndpoint"/controlPlaneEndpoint/g' controlPlane.yml
-      sed -i 's/"subnet"/subnet/g' controlPlane.ymll
-      sed -i 's/{/ /g' controlPlane.yml
-      sed -i 's/}/ /g' controlPlane.yml
-      cat controlPlane.yml >> ansible/0-inventory.yml
-    EOF
-    }
+   provisioner "local-exec" {
+    command = "sleep 180"  # Adjust the sleep duration as needed
+  }
+   
+   depends_on = [aws_route_table_association.kubernetes-private]
 
    connection {
      type        = "ssh"
@@ -54,13 +47,14 @@ resource "aws_instance" "controller" {
      private_key = file("${var.keypair_name}.pem")
     # private_key = file("~/.ssh/terraform")
      host        = self.private_ip
+     timeout     = "360s"
    }
 
    provisioner "remote-exec" {
      inline = [
-       "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
-       "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
-       "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
+       "wget https://downloads.python.org/pypy/pypy3.10-v7.3.13-linux64.tar.bz2",
+       "sudo tar xf pypy3.10-v7.3.13-linux64.tar.bz2",
+       "sudo mv pypy3.10-v7.3.13-linux64 /opt/bin/python"
      ]
 
    }

@@ -9,6 +9,16 @@
         group: "{{ mgmt_user }}"
         mode: "0755"
 
+    - name: copying elb id from output to inventory file
+      shell: |
+         cd ../
+         terraform output controlPlane  >> controlPlane.yml
+         sed -i 's/  "controlPlaneEndpoint"/controlPlaneEndpoint/g' controlPlane.yml
+         sed -i 's/  "subnet"/subnet/g' controlPlane.yml
+         sed -i 's/{/ /g' controlPlane.yml
+         sed -i 's/}/ /g' controlPlane.yml
+         cat controlPlane.yml >> ansible/0-inventory.yml
+
 - name: Copy certs to controller
   hosts: etcd01
   tasks:

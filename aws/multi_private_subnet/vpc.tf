@@ -112,12 +112,40 @@ resource "aws_security_group" "lunix" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port = 8
+    to_port = 0
+    protocol = "icmp"
+    cidr_blocks = ["${var.vpc_cidr}"]
+  }
+
   # Allow all outbound traffic
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 22
+    to_port = 22
+    protocol = "TCP"
+    cidr_blocks = ["${var.vpc_cidr}"]
+  }
+
+  egress {
+    from_port = 8
+    to_port = 0
+    protocol = "icmp"
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   tags = {
@@ -132,6 +160,13 @@ resource "aws_security_group" "windows" {
   description =  "allow RDP traffic"
   name = "${var.guest_name_prefix}-bastion-windows-sg"
 
+  ingress {
+    from_port = 8
+    to_port = 0
+    protocol = "icmp"
+    cidr_blocks = ["${var.vpc_cidr}"]
+  }
+
   # Allow inbound traffic to the port used by Kubernetes API HTTPS
   ingress {
     from_port = 3389
@@ -142,12 +177,34 @@ resource "aws_security_group" "windows" {
 
   # Allow all outbound traffic
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Allow all outbound traffic
+  egress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 3389
+    to_port = 3389
+    protocol = "TCP"
+    cidr_blocks = ["${var.vpc_cidr}"]
+  }
+
+  egress {
+    from_port = 8
+    to_port = 0
+    protocol = "icmp"
+    cidr_blocks = ["${var.vpc_cidr}"]
+  }
+  
   tags = {
     Owner = "${var.owner}"
     Name = "${var.guest_name_prefix}-bastion-windows-sg"

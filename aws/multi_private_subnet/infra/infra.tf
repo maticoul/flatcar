@@ -23,26 +23,9 @@ resource "aws_instance" "smb-server" {
   }
 
     availability_zone = "${var.azs[0]}"
-    vpc_security_group_ids = ["${var.lunix_sg}"]
+    vpc_security_group_ids = ["${aws_security_group.smb.id}"]
     key_name = "${var.keypair_name}"
-
-    connection {
-    type        = "ssh"
-    user        = "${var.guest_ssh_user-infra}"
-    private_key = file("${var.keypair_name}.pem")
-    #private_key = file("~/.ssh/terraform")
-    host        = self.private_ip
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install python3.9 -y",
-      "sudo apt install samba -y",
-    ]
-
-  }
-
+    
     tags = {
       Owner = "${var.owner}"
       Name = "${var.guest_name_prefix}-smb-server"
@@ -55,7 +38,6 @@ resource "aws_instance" "smb-server" {
 #########################
 
 resource "aws_instance" "IICS-SERVER" {
-    count = 1
     ami = "${var.ami_iics}"
     instance_type = "${var.windows-instance-type}"
 
@@ -76,7 +58,7 @@ resource "aws_instance" "IICS-SERVER" {
   }
 
     availability_zone = "${var.azs[0]}"
-    vpc_security_group_ids = ["${var.windows_sg}"]
+    vpc_security_group_ids = ["${aws_security_group.iics.id}"]
     key_name = "${var.keypair_name}"
 
     tags = {

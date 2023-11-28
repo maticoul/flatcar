@@ -14,15 +14,15 @@ disk_nfs = "1024"
 disk_iics = "150"
 # vpc_kubernetes = ""
 # subnet_public = ""
-ami_infra = "ami-03f65b8614a860c29"
-ami_iics = "ami-0fae5ac34f36d5963"
+ami_infra = "ami-0e83be366243f524a"
+ami_iics = "ami-063f64fd624326307"
 private_subnet_cidr = ["172.30.12.0/24", "172.30.13.0/24", "172.30.14.0/24"]
-amis = "ami-01afff0691ed88b86"
-azs = ["us-west-2a", "us-west-2b", "us-west-2c"]
+amis = "ami-0108e09121726fc88"
+azs = ["us-east-2a", "us-east-2b", "us-east-2c"]
 keypair_name = "k8s-apis"
 elb_name = "apis-lb"
 owner = "Kubernetes"
-region = "us-west-2"
+region = "us-east-2"
 vpc_cidr = "172.30.0.0/16"
 etcd_instance_type = "t2.micro"
 controller_instance_type = "t2.medium"
@@ -46,5 +46,8 @@ guest_ssh_user-infra  = "ubuntu"
    override the default below.
 */
 
-/* amis = { us-west-2 = "ami-123456" } */
-
+/* amis =   us-west-2 = "ami-123456"   */
+ 
+  subnet_public = "subnet-0fe2711f736a9d997"
+  vpc_kubernetes = "vpc-0823d064e3ec34854"
+ 

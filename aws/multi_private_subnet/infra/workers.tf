@@ -27,7 +27,7 @@ resource "aws_instance" "worker" {
   }
 
     availability_zone = "${var.azs[count.index % 3]}"
-    vpc_security_group_ids = ["${aws_security_group.kubernetes.id}"]
+    vpc_security_group_ids = ["${aws_security_group.kubernetes-workers.id}"]
     key_name = "${var.keypair_name}"
 
     tags = {
@@ -36,19 +36,26 @@ resource "aws_instance" "worker" {
       Department = "Global Operations"
      }
 
+  provisioner "local-exec" {
+    command = "sleep 180"  # Adjust the sleep duration as needed
+  }
+  
+  depends_on = [aws_route_table_association.kubernetes-private]
+
   connection {
     type        = "ssh"
     user        = "${var.guest_ssh_user}"
     private_key = file("${var.keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.private_ip
+    timeout     = "360s"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "wget https://downloads.python.org/pypy/pypy3.7-v7.3.3-linux64.tar.bz2",
-      "sudo tar xf pypy3.7-v7.3.3-linux64.tar.bz2",
-      "sudo mv pypy3.7-v7.3.3-linux64 /opt/bin/python"
+      "wget https://downloads.python.org/pypy/pypy3.10-v7.3.13-linux64.tar.bz2",
+      "sudo tar xf pypy3.10-v7.3.13-linux64.tar.bz2",
+      "sudo mv pypy3.10-v7.3.13-linux64 /opt/bin/python"
     ]
 
   } 

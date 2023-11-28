@@ -1,4 +1,11 @@
-## 1- Terraform
+## 1- Terraform aws
+
+```bash
+$ export AWS_ACCESS_KEY_ID=
+$ export AWS_SECRET_ACCESS_KEY=
+```
+
+## 1- Terraform vsphere
 
 ```bash
 $ export TF_VAR_provider_vsphere_user='username'
