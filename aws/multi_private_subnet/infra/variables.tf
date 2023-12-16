@@ -40,33 +40,44 @@ variable "subnet_public" {
   #default = ""
 }
 
-variable "ami_infra" {
-  description = "Name of the VPC"
-  type = string
-  #default = "ami-03f65b8614a860c29"
-}
+# variable "ami_infra" {
+#   description = "Name of the VPC"
+#   type = string
+#   #default = "ami-03f65b8614a860c29"
+# }
 
-variable "ami_iics" {
-  description = "Name of the VPC"
-  type = string
-  #default = "ami-0fae5ac34f36d5963"
-}
+# variable "ami_iics" {
+#   description = "Name of the VPC"
+#   type = string
+#   #default = "ami-0fae5ac34f36d5963"
+# }
 
 variable amis {
   description = "Default AMIs to use for nodes depending on the region"
-#  type = map
-  default = ""
-  #{
-  #   ap-northeast-1 = "ami-0567c164"
-  #   ap-southeast-1 = "ami-a1288ec2"
-  #   cn-north-1 = "ami-d9f226b4"
-  #   eu-central-1 = "ami-8504fdea"
-  #   eu-west-1 = "ami-0d77397e"
-  #   sa-east-1 = "ami-e93da085"
-  #   us-east-1 = "ami-0e12c4fb31633888a"
-  #   us-west-1 = "ami-6e165d0e"
-  #   us-west-2 = "ami-01afff0691ed88b86"
-  # }
+  type = map
+  default = {      
+	af-south-1 = "ami-097488680d71eca73"
+    ap-east-1 = "ami-0f07205ae67bbc643"
+    ap-northeast-1 ="ami-0be127e34b9de2d91"
+    ap-northeast-2 = "ami-00a28d7b6c3a2941f"
+    ap-south-1 = "ami-099f89600a3e7be42"
+    ap-southeast-1 = "ami-0e0f99ffaff15079c"
+    ap-southeast-2 = "ami-014e556d2ec06e2f5"
+    ap-southeast-3 = "ami-04e436d2335818662"
+    ca-central-1 = "ami-04a8af4c3cad13e04"
+    eu-central-1 = "ami-067d5917875d02d3a"
+    eu-north-1 = "ami-01d0b8725ca46b427"
+    eu-south-1 = "ami-09305d5acfe5301a1"
+    eu-west-1 = "ami-00608b016ff882bc5"
+    eu-west-2 = "ami-083d828d4f91e462a"
+    eu-west-3 = "ami-02afddc708a6316e2"
+    me-south-1 = "ami-0294e745bbb404605"
+    sa-east-1 = "ami-04c86686205b2968c"
+    us-east-1 = "ami-068c9f344cfa33323"
+    us-east-2 = "ami-0108e09121726fc88"
+    us-west-1 = "ami-0b2bc1a1493b4b95f"
+    us-west-2 = "ami-0acf5f8c6f38cfe9e"
+    	}
 }
 
 variable amis-ubuntu {

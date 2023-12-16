@@ -5,8 +5,8 @@
 
 resource "aws_instance" "worker" {
     count = 6
-    ami = var.amis
-    #ami = "${lookup(var.amis, var.region)}"
+    #ami = var.amis
+    ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.worker_instance_type}"
 
     subnet_id = element(aws_subnet.kubernetes-private[*].id, count.index % 3)   #"${aws_subnet.kubernetes-private[count.index].id}"

@@ -4,8 +4,8 @@
 
 resource "aws_instance" "controller" {
     count = 3
-    ami = var.amis
-    #ami = "${lookup(var.amis, var.region)}"
+    #ami = var.amis
+    ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.controller_instance_type}"
 
     subnet_id = element(aws_subnet.kubernetes-private[*].id, count.index)   # "${aws_subnet.kubernetes-private[count.index].id}"

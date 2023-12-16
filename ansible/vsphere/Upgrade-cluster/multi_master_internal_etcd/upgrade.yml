@@ -1,25 +1,22 @@
-- name: Download kubectl from storage.googleapis.com
-  hosts: haproxy
+- name: Upgrading master01 kubernetes version 
+  hosts: master01
   tasks:
-   - name: Downloading kubectl
-     become: yes
-     get_url:
-        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
-        dest: '/usr/local/bin/'
-        mode: '+x'
 
    - name: Downloading kubeadm
      become: yes
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
         dest: '{{ DOWNLOAD_DIR }}'
-        mode: '+x'
-     delegate_to: master01
+        mode: '+x'  
 
    - name: upgrade apply
      become: yes
      shell: kubeadm upgrade apply {{ RELEASE }} -y
-     delegate_to: master01
+      
+   - name: drain master01
+     become: yes
+     shell: kubectl drain master01 --ignore-daemonsets
+     delegate_to: localhost
 
    - name: Downloading kubelet
      become: yes
@@ -27,7 +24,6 @@
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
         dest: '{{ DOWNLOAD_DIR }}'
         mode: '+x'
-     delegate_to: master01
 
    - name: Downloading kubectl
      become: yes
@@ -35,41 +31,62 @@
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
         dest: '{{ DOWNLOAD_DIR }}'
         mode: '+x'
-     delegate_to: master01
-
+      
    - name: running sysctl daemon-reload command
      become: yes
      command:
        cmd: systemctl daemon-reload
-     delegate_to: master01
 
    - name: running restart kubelet command
      become: yes
      command:
        cmd: systemctl restart kubelet
-     delegate_to: master01
 
-- name: Download kubeadm from storage.googleapis.com
-  hosts: kubernetes !master01
+   - name: uncordon master01
+     become: yes
+     shell: kubectl uncordon master01
+     delegate_to: localhost
+      
+
+- name: Upgrading master02 and master03 kubernetes version 
+  hosts: masters !master01
   tasks:
+
    - name: Downloading kubeadm
+     become: yes
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
         dest: '{{ DOWNLOAD_DIR }}'
-        mode: '+x'
+        mode: '+x'  
 
-   - name: Downloading kubectl
-     get_url:
-        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
-        dest: '{{ DOWNLOAD_DIR }}'
-        mode: '+x'
+   - name: upgrading nodes
+     become: yes
+     shell: kubeadm upgrade node
+      
+   - name: drain nodes
+     become: yes
+     shell: kubectl drain master02 --ignore-daemonsets
+     delegate_to: localhost
+
+   - name: drain nodes
+     become: yes
+     shell: kubectl drain master03 --ignore-daemonsets
+     delegate_to: localhost
 
    - name: Downloading kubelet
+     become: yes
      get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
         dest: '{{ DOWNLOAD_DIR }}'
         mode: '+x'
 
+   - name: Downloading kubectl
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+      
    - name: running sysctl daemon-reload command
      become: yes
      command:
@@ -79,3 +96,83 @@
      become: yes
      command:
        cmd: systemctl restart kubelet
+
+   - name: uncordon master02
+     become: yes
+     shell: kubectl uncordon master02
+     delegate_to: localhost
+
+   - name: uncordon master03
+     become: yes
+     shell: kubectl uncordon master03
+     delegate_to: localhost
+
+
+- name: Upgrading workers kubernetes version 
+  hosts: workers
+  tasks:
+
+   - name: Downloading kubeadm
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubeadm
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'  
+
+   - name: upgrading nodes
+     become: yes
+     shell: kubeadm upgrade node
+      
+   - name: drain worker01
+     become: yes
+     shell: kubectl drain worker01 --ignore-daemonsets
+     delegate_to: localhost
+
+   - name: drain worker02
+     become: yes
+     shell: kubectl drain worker02 --ignore-daemonsets
+     delegate_to: localhost
+
+   - name: drain worker03
+     become: yes
+     shell: kubectl drain worker03 --ignore-daemonsets
+     delegate_to: localhost
+
+   - name: Downloading kubelet
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubelet
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+
+   - name: Downloading kubectl
+     become: yes
+     get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ RELEASE }}/bin/linux/amd64/kubectl
+        dest: '{{ DOWNLOAD_DIR }}'
+        mode: '+x'
+      
+   - name: running sysctl daemon-reload command
+     become: yes
+     command:
+       cmd: systemctl daemon-reload
+
+   - name: running restart kubelet command
+     become: yes
+     command:
+       cmd: systemctl restart kubelet
+
+   - name: uncordon worker01
+     become: yes
+     shell: kubectl uncordon worker01
+     delegate_to: localhost
+
+   - name: uncordon worker02
+     become: yes
+     shell: kubectl uncordon worker02
+     delegate_to: localhost
+
+   - name: uncordon worker03
+     become: yes
+     shell: kubectl uncordon worker03
+     delegate_to: localhost

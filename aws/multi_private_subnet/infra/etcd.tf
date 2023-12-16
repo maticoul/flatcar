@@ -4,8 +4,8 @@
 
 resource "aws_instance" "etcd" {
     count = 3
-    ami = var.amis
-    #ami = "${lookup(var.amis, var.region)}"
+    #ami = var.amis
+    ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.etcd_instance_type}"
     
     subnet_id = "${aws_subnet.kubernetes-private[count.index].id}"

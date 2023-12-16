@@ -22,16 +22,14 @@ master02 ansible_host=master02
 master03 ansible_host=master02    
 worker01 ansible_host=worker01    
 worker02 ansible_host=worker02   
-worker03 ansible_host=worker03 
+worker03 ansible_host=worker03
+worker04 ansible_host=worker04 
   
-[infrastructure]
-haproxy ansible_host=haproxy   ansible_python_interpreter=/usr/bin/python
 [all:vars]
 ansible_become=true
 ansible_python_interpreter=/opt/bin/python/bin/pypy
-RELEASE=v1.26.5
-ansible_user=username
-ansible_password=password
+RELEASE=v1.28.5
+DOWNLOAD_DIR=/opt/bin
 
 #[webservers]
 #alpha.example.org

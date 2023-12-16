@@ -100,8 +100,8 @@ variable amis-windows {
   }
 }
 # Instances Setup
-variable ami-bastion-lunix {
-  description = "Default AMIs to use for nodes depending on the region"
+# variable ami-bastion-lunix {
+#   description = "Default AMIs to use for nodes depending on the region"
   # type = map
   # default = {
   #   ap-northeast-1 = "ami-0567c164"
@@ -114,9 +114,9 @@ variable ami-bastion-lunix {
   #   us-west-1 = "ami-6e165d0e"
   #   us-west-2 = "ami-01afff0691ed88b86"
   # }
-}
+# }
 
-variable ami-bastion-windows {
-  description = "Default AMIs to use for nodes depending on the region"
-  # default = {
-}
+# variable ami-bastion-windows {
+#   description = "Default AMIs to use for nodes depending on the region"
+#   # default = {
+# }

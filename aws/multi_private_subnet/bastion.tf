@@ -3,7 +3,8 @@
 ####################
 
 resource "aws_instance" "bastion-lunix" {
-    ami = var.ami-bastion-lunix
+    #ami = var.ami-bastion-lunix
+    ami = "${lookup(var.amis-ubuntu, var.region)}"
     instance_type = var.instance_type-bastion-lunix
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"
@@ -90,7 +91,8 @@ resource "aws_instance" "bastion-lunix" {
 ############################
 
 resource "aws_instance" "bastion-Windows" {
-    ami = var.ami-bastion-windows
+    #ami = var.ami-bastion-windows
+    ami = "${lookup(var.amis-windows, var.region)}"
     instance_type = var.instance_type-bastion-windows
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"

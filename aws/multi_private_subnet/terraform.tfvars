@@ -8,15 +8,15 @@
 
 instance_type-bastion-lunix = "t2.micro"
 instance_type-bastion-windows = "t2.medium"
-ami-bastion-lunix = "ami-0e83be366243f524a"
-ami-bastion-windows = "ami-063f64fd624326307"
+# ami-bastion-lunix = "ami-0e83be366243f524a"
+# ami-bastion-windows = "ami-063f64fd624326307"
 disk_Bastion-lunix = "60"
 disk_Bastion-windows = "250"
-azs = ["us-east-2a", "us-east-2b", "us-east-2c"]
+region = "us-east-2"
+azs = ["${var.region}a", "${var.region}b", "${var.region}c"]
 keypair_name = "k8s-apis"
 vpc_name = "Kubernetes"
 owner = "Kubernetes"
-region = "us-east-2"
 vpc_cidr = "172.30.0.0/16"
 subnet-public_cidr = "172.30.11.0/24"
 guest_name_prefix     = "k8s-prod"
