@@ -92,7 +92,7 @@ resource "aws_instance" "bastion-lunix" {
 
 resource "aws_instance" "bastion-Windows" {
     #ami = var.ami-bastion-windows
-    ami = "${lookup(var.amis-windows, var.aws_region)}"
+    ami = "${lookup(var.amis_windows, var.aws_region)}"
     instance_type = var.aws_bastion_windows_type
 
     subnet_id = "${aws_subnet.kubernetes-public.id}"

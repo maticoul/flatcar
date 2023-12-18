@@ -4,7 +4,7 @@
 
 resource "aws_instance" "smb-server" {
     #ami = "${var.amis-ubuntu}"
-    ami = "${lookup(var.amis-ubuntu, var.aws_region)}"
+    ami = "${lookup(var.amis_ubuntu, var.aws_region)}"
     instance_type = "${var.smb-instance-type}"
 
     subnet_id = aws_subnet.kubernetes-private[0].id
@@ -39,7 +39,7 @@ resource "aws_instance" "smb-server" {
 #########################
 
 resource "aws_instance" "IICS-SERVER" {
-    ami = "${lookup(var.amis-windows, var.aws_region)}"
+    ami = "${lookup(var.amis_windows, var.aws_region)}"
     instance_type = "${var.windows-instance-type}"
 
     subnet_id = aws_subnet.kubernetes-private[0].id
