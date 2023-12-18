@@ -3,24 +3,24 @@
 #########################
 
 resource "aws_instance" "bastion" {
-    ami = "ami-03f65b8614a860c29"
+    ami = "${lookup(var.amis_ubuntu, var.aws_region)}"
     instance_type = "t2.micro"
 
-    subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.subnet_cidr, 200 )}"
+    subnet_id = "${aws_subnet.kubernetes[0].id}"
+    private_ip = "${cidrhost(var.aws_public_subnet_cidr[0], 200 )}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
 
-    availability_zone = "${var.zone}"
+    availability_zone = "${var.aws_azs[0]}"
     vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_Bastion
+    volume_size           = var.smb_instance_disk
     delete_on_termination = true
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "Bastion-lunix"
       Department = "Global Operations"
     }
@@ -33,14 +33,14 @@ resource "aws_instance" "bastion" {
   }
 
    provisioner "file" {
-     source      = "${var.keypair_name}.pem"  # terraform machine
-     destination = "${var.keypair_name}.pem"  # remote machine
+     source      = "${var.aws_keypair_name}.pem"  # terraform machine
+     destination = "${var.aws_keypair_name}.pem"  # remote machine
   }
 
     connection {
     type        = "ssh"
-    user        = "${var.guest_ssh_user-bastion}"
-    private_key = file("${var.keypair_name}.pem")
+    user        = "${var.smb_instance_ssh_user}"
+    private_key = file("${var.aws_keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.public_ip
   }
@@ -52,10 +52,10 @@ resource "aws_instance" "bastion" {
       "sudo apt install ansible -y ",
       "sudo apt install unzip",
       "sudo mv /ansible/template/hosts /etc/hosts",
-      "sudo chmod 400 ${var.keypair_name}.pem",
+      "sudo chmod 400 ${var.aws_keypair_name}.pem",
       "sudo apt install dos2unix",
       "dos2unix /home/ubuntu/ansible/deploy.sh",
-      "sh /home/ubuntu/deploy.sh"
+     # "sh /home/ubuntu/deploy.sh"
    #   "sudo chmod 400 ${var.keypair_name}.pem",
     
     ]
@@ -63,7 +63,7 @@ resource "aws_instance" "bastion" {
   }
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "Bastion"
       Department = "Global Operations"
     }
@@ -95,7 +95,7 @@ resource "aws_security_group" "bastion" {
   }
 
   tags = {
-    Owner = "${var.owner}"
+    Owner = "${var.aws_owner}"
     Name = "bastion-sg"
     Department = "Global Operations"
   }

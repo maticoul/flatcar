@@ -3,27 +3,27 @@
 #########################
 
 resource "aws_instance" "smb-server" {
-    ami = "${var.ami_infra}"
-    instance_type = "${var.smb-instance-type}"
+    ami = "${lookup(var.amis_ubuntu, var.aws_region)}"
+    instance_type = "${var.smb_instance_type}"
 
-    subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.subnet_cidr, 56)}"
+    subnet_id = "${aws_subnet.kubernetes[0].id}"
+    private_ip = "${cidrhost(var.aws_public_subnet_cidr[0], 56)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_smb
+    volume_size           = var.smb_instance_disk
     delete_on_termination = true
   }
 
-    availability_zone = "${var.zone}"
+    availability_zone = "${var.aws_azs[0]}"
     vpc_security_group_ids = ["${aws_security_group.infra.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
 
     connection {
     type        = "ssh"
-    user        = "${var.guest_ssh_user-bastion}"
-    private_key = file("${var.keypair_name}.pem")
+    user        = "${var.smb_instance_ssh_user}"
+    private_key = file("${var.aws_keypair_name}.pem")
     #private_key = file("~/.ssh/terraform")
     host        = self.public_ip
   }
@@ -38,7 +38,7 @@ resource "aws_instance" "smb-server" {
   }
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "smb-server"
       Department = "Global Operations"
     }
@@ -48,33 +48,33 @@ resource "aws_instance" "smb-server" {
 # IICS SERVER instances
 #########################
 
-resource "aws_instance" "IICS-SERVER" {
-    count = 1
-    ami = "${var.ami_iics}"
-    instance_type = "${var.windows-instance-type}"
+resource "aws_instance" "iics-server" {
+    #count = 1
+    ami = "${lookup(var.amis_windows, var.aws_region)}"
+    instance_type = "${var.windows_instance_type}"
 
-    subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.subnet_cidr, 60)}"
+    subnet_id = "${aws_subnet.kubernetes[0].id}"
+    private_ip = "${cidrhost(var.aws_public_subnet_cidr[0], 60)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_iics
+    volume_size           = var.windows_instance_disk
     delete_on_termination = true
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "iics-server"
       Department = "Global Operations"
     }
   }
 
-    availability_zone = "${var.zone}"
+    availability_zone = "${var.aws_azs[0]}"
     vpc_security_group_ids = ["${aws_security_group.infra.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "IICS-SERVER"
       Department = "Global Operations"
     }
@@ -101,7 +101,7 @@ resource "aws_security_group" "infra" {
     from_port = 0
     to_port = 0
     protocol = "-1"
-    cidr_blocks = ["${var.control_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound traffic
@@ -113,7 +113,7 @@ resource "aws_security_group" "infra" {
   }
 
   tags = {
-    Owner = "${var.owner}"
+    Owner = "${var.aws_owner}"
     Name = "infra-sg"
     Department = "Global Operations"
   }
@@ -138,7 +138,7 @@ resource "aws_security_group" "windows" {
     from_port = 0
     to_port = 0
     protocol = "-1"
-    cidr_blocks = ["${var.control_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound traffic
@@ -150,7 +150,7 @@ resource "aws_security_group" "windows" {
   }
 
   tags = {
-    Owner = "${var.owner}"
+    Owner = "${var.aws_owner}"
     Name = "windows-sg"
     Department = "Global Operations"
   }

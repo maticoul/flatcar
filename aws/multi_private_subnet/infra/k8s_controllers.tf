@@ -3,35 +3,35 @@
 ############################
 
 resource "aws_instance" "controller" {
-    count = 3
+    count = var.controller_instance_num
     #ami = var.amis
-    ami = "${lookup(var.amis, var.region)}"
+    ami = "${lookup(var.amis, var.aws_region)}"
     instance_type = "${var.controller_instance_type}"
 
     subnet_id = element(aws_subnet.kubernetes-private[*].id, count.index)   # "${aws_subnet.kubernetes-private[count.index].id}"
-    private_ip = "${cidrhost(var.private_subnet_cidr[count.index], 50 + count.index)}"
+    private_ip = "${cidrhost(var.aws_private_subnet_cidr[count.index], 50 + count.index)}"
     associate_public_ip_address = false # Instances have public, dynamic IP
     source_dest_check = false # TODO Required??
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_master
+    volume_size           = var.controller_instance_disk
     delete_on_termination = true
 
     tags = {
-      Owner = "${var.owner}"
-      Name = "${var.guest_name_prefix}-master0-${count.index +1}"
+      Owner = "${var.aws_owner}"
+      Name = "${var.aws_name_prefix}-master0-${count.index +1}"
       Department = "Global Operations"
     }
   }
 
-    availability_zone = "${var.azs[count.index]}"
+    availability_zone = "${var.aws_azs[count.index]}"
     vpc_security_group_ids = ["${aws_security_group.kubernetes-master.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
 
     tags = {
-      Owner = "${var.owner}"
-      Name = "${var.guest_name_prefix}-master0-${count.index +1}"
+      Owner = "${var.aws_owner}"
+      Name = "${var.aws_name_prefix}-master0-${count.index +1}"
       Department = "Global Operations"
     }
 
@@ -43,8 +43,8 @@ resource "aws_instance" "controller" {
 
    connection {
      type        = "ssh"
-     user        = "${var.guest_ssh_user}"
-     private_key = file("${var.keypair_name}.pem")
+     user        = "${var.smb-instance_ssh_user}"
+     private_key = file("${var.aws_keypair_name}.pem")
     # private_key = file("~/.ssh/terraform")
      host        = self.private_ip
      timeout     = "360s"

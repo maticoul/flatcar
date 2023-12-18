@@ -3,10 +3,10 @@
 ############
 
 resource "aws_subnet" "kubernetes-private" {
- count      = 3
+ count      = var.aws_private_subnet_num
  vpc_id = var.vpc_kubernetes
- cidr_block = var.private_subnet_cidr[count.index]
- availability_zone = var.azs[count.index]
+ cidr_block = var.aws_private_subnet_cidr[count.index]
+ availability_zone = var.aws_azs[count.index]
 
  tags = {
    Name = "Kubernetes-Private ${count.index + 1}"
@@ -21,7 +21,7 @@ resource "aws_eip" "kubernetes-eip" {
 
   tags = {
     Name = "kubernetes-eip"
-    Owner = "${var.owner}"
+    Owner = "${var.aws_owner}"
     Department = "Global Operations"
   }
 }
@@ -31,7 +31,7 @@ resource "aws_nat_gateway" "ngw" {
   subnet_id = var.subnet_public
   tags = {
     Name = "kubernetes-ngw"
-    Owner = "${var.owner}"
+    Owner = "${var.aws_owner}"
     Department = "Global Operations"
   }
 }
@@ -50,13 +50,13 @@ resource "aws_route_table" "kubernetes-private" {
 
     tags = {
       Name = "kubernetes-private"
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Department = "Global Operations"
     }
 }
 
 resource "aws_route_table_association" "kubernetes-private" {
- count = length(var.private_subnet_cidr)
+ count = length(var.aws_private_subnet_num)
  subnet_id      = element(aws_subnet.kubernetes-private[*].id, count.index)
  route_table_id = "${aws_route_table.kubernetes-private.id}"
 }
@@ -68,21 +68,21 @@ resource "aws_route_table_association" "kubernetes-private" {
 resource "aws_security_group" "kubernetes-etcd" {
   vpc_id = var.vpc_kubernetes
   description = "allow traffic from to node"
-  name = "${var.guest_name_prefix}-sg-etcd-node"
+  name = "${var.aws_name_prefix}-sg-etcd-node"
 
   # Allow all internal
   ingress {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
   
   ingress {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -90,7 +90,7 @@ resource "aws_security_group" "kubernetes-etcd" {
     from_port = 2379
     to_port = 2380
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
   
   # Allow all internal
@@ -98,7 +98,7 @@ resource "aws_security_group" "kubernetes-etcd" {
     from_port = 10250
     to_port = 10250
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound
@@ -121,12 +121,12 @@ resource "aws_security_group" "kubernetes-etcd" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-sg-etcd-node"
+    Owner = "${var.aws_owner}"
+    Name = "${var.aws_name_prefix}-sg-etcd-node"
     Department = "Global Operations"
   }
 }
@@ -135,13 +135,13 @@ resource "aws_security_group" "kubernetes-etcd" {
 resource "aws_security_group" "kubernetes-master" {
   vpc_id = var.vpc_kubernetes
   description = "allow traffic from to node"
-  name = "${var.guest_name_prefix}-sg-masters-node"
+  name = "${var.aws_name_prefix}-sg-masters-node"
 
   ingress {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -149,7 +149,7 @@ resource "aws_security_group" "kubernetes-master" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -157,28 +157,28 @@ resource "aws_security_group" "kubernetes-master" {
     from_port = 6443
     to_port = 6443
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
   
   ingress {
     from_port = 10250
     to_port = 10250
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   ingress {
     from_port = 10257
     to_port = 10257
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   ingress {
     from_port = 10259
     to_port = 10259
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -186,7 +186,7 @@ resource "aws_security_group" "kubernetes-master" {
     from_port = 2379
     to_port = 2380
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
   
   # Allow all internal
@@ -194,7 +194,7 @@ resource "aws_security_group" "kubernetes-master" {
     from_port = 10250
     to_port = 10250
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound
@@ -217,7 +217,7 @@ resource "aws_security_group" "kubernetes-master" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -225,12 +225,12 @@ resource "aws_security_group" "kubernetes-master" {
     from_port = 2379
     to_port = 2380
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-sg-masters-node"
+    Owner = "${var.aws_owner}"
+    Name = "${var.aws_name_prefix}-sg-masters-node"
     Department = "Global Operations"
   }
 }
@@ -239,13 +239,13 @@ resource "aws_security_group" "kubernetes-master" {
 resource "aws_security_group" "kubernetes-workers" {
   vpc_id = var.vpc_kubernetes
   description = "allow traffic from to node"
-  name = "${var.guest_name_prefix}-sg-workers-node"
+  name = "${var.aws_name_prefix}-sg-workers-node"
   
   ingress {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -253,7 +253,7 @@ resource "aws_security_group" "kubernetes-workers" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all internal
@@ -261,7 +261,7 @@ resource "aws_security_group" "kubernetes-workers" {
     from_port = 10250
     to_port = 10250
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
   
   # Allow all internal
@@ -269,7 +269,7 @@ resource "aws_security_group" "kubernetes-workers" {
     from_port = 30000
     to_port = 32767
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound
@@ -292,26 +292,26 @@ resource "aws_security_group" "kubernetes-workers" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   egress {
     from_port = 6443
     to_port = 6443
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   egress {
     from_port = 10250
     to_port = 10250
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-sg-workers-node"
+    Owner = "${var.aws_owner}"
+    Name = "${var.aws_name_prefix}-sg-workers-node"
     Department = "Global Operations"
   }
 }
@@ -319,14 +319,14 @@ resource "aws_security_group" "kubernetes-workers" {
 
 resource "aws_security_group" "kubernetes_api" {
   vpc_id = var.vpc_kubernetes
-  name = "${var.guest_name_prefix}-kubernetes-api-sg"
+  name = "${var.aws_name_prefix}-kubernetes-api-sg"
 
   # Allow inbound traffic to the port used by Kubernetes API HTTPS
   ingress {
     from_port = 6443
     to_port = 6443
     protocol = "TCP"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow ICMP from control host IP
@@ -334,7 +334,7 @@ resource "aws_security_group" "kubernetes_api" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
   
   # Allow all outbound traffic
@@ -342,19 +342,19 @@ resource "aws_security_group" "kubernetes_api" {
     from_port = 6443
     to_port = 6443
     protocol = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   egress {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-kubernetes-api"
+    Owner = "${var.aws_owner}"
+    Name = "${var.aws_name_prefix}-kubernetes-api"
     Department = "Global Operations"
   }
 }
@@ -362,20 +362,20 @@ resource "aws_security_group" "kubernetes_api" {
 resource "aws_security_group" "smb" {
   vpc_id = var.vpc_kubernetes
   description =  "allow from and to lunix ec2 traffic"
-  name = "${var.guest_name_prefix}-smb-sg"
+  name = "${var.aws_name_prefix}-smb-sg"
  
   ingress {
     from_port   = 445
     to_port     = 445
     protocol    = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   ingress {
     from_port   = 139
     to_port     = 139
     protocol    = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow ICMP from control host IP
@@ -383,7 +383,7 @@ resource "aws_security_group" "smb" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow inbound traffic to the port used by Kubernetes API HTTPS
@@ -391,7 +391,7 @@ resource "aws_security_group" "smb" {
     from_port = 22
     to_port = 22
     protocol = "TCP"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound traffic
@@ -414,12 +414,12 @@ resource "aws_security_group" "smb" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-smb-sg"
+    Owner = "${var.aws_owner}"
+    Name = "${var.aws_name_prefix}-smb-sg"
     Department = "Global Operations"
   }
 }
@@ -427,13 +427,13 @@ resource "aws_security_group" "smb" {
 resource "aws_security_group" "iics" {
   vpc_id = var.vpc_kubernetes
   description =  "allow RDP traffic"
-  name = "${var.guest_name_prefix}-iics-sg"
+  name = "${var.aws_name_prefix}-iics-sg"
 
   ingress {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow inbound traffic to the port used by Kubernetes API HTTPS
@@ -441,7 +441,7 @@ resource "aws_security_group" "iics" {
     from_port = 3389
     to_port = 3389
     protocol = "TCP"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   # Allow all outbound traffic
@@ -463,12 +463,12 @@ resource "aws_security_group" "iics" {
     from_port = 8
     to_port = 0
     protocol = "icmp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
   tags = {
-    Owner = "${var.owner}"
-    Name = "${var.guest_name_prefix}-iics-sg"
+    Owner = "${var.aws_owner}"
+    Name = "${var.aws_name_prefix}-iics-sg"
     Department = "Global Operations"
   }
 }
@@ -478,7 +478,7 @@ resource "aws_security_group" "iics" {
 ###############################
 
 resource "aws_elb" "kubernetes_api" {
-    name = "${var.elb_name}"
+    name = "${var.kube_elb_name}"
     instances = "${aws_instance.controller.*.id}"
     internal           = true  # Set to true for internal ELB, false for internet-facing ELB
     subnets =  "${aws_subnet.kubernetes-private.*.id}"  # Specify the desired subnets directly
@@ -503,8 +503,8 @@ resource "aws_elb" "kubernetes_api" {
     }
 
     tags = {
-      Name = "${var.guest_name_prefix}-kubernetes"
-      Owner = "${var.owner}"
+      Name = "${var.aws_name_prefix}-kubernetes"
+      Owner = "${var.aws_owner}"
       Department = "Global Operations"
     }
    # scheme = "internet-facing" # or "internal" depending on your needs
@@ -518,7 +518,7 @@ resource "aws_elb" "kubernetes_api" {
 output "controlPlane" {
   value = {
      controlPlaneEndpoint = "${aws_elb.kubernetes_api.dns_name}"
-     subnet = "${var.vpc_cidr}"
+     subnet = "${var.aws_vpc_cidr}"
   }
 }
 

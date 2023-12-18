@@ -3,32 +3,32 @@
 #########################
 
 resource "aws_instance" "etcd" {
-    count = 3
-    ami = "${lookup(var.amis, var.region)}"
+    count = var.etcd_instance_num
+    ami = "${lookup(var.amis, var.aws_region)}"
     instance_type = "${var.etcd_instance_type}"
 
-    subnet_id = "${aws_subnet.kubernetes.id}"
-    private_ip = "${cidrhost(var.subnet_cidr, 10 + count.index)}"
+    subnet_id = "${aws_subnet.kubernetes[count.index].id}"
+    private_ip = "${cidrhost(var.aws_public_subnet_cidr[count.index], 10 + count.index)}"
     #associate_public_ip_address = false # Instances have public, dynamic IP
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_etcd
+    volume_size           = var.etcd_instance_disk
     delete_on_termination = true
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "preprod-etcd0-${count.index +1}"
       Department = "Global Operations"
     }
   }
 
-    availability_zone = "${var.zone}"
+    availability_zone = "${var.aws_azs[count.index]}"
     vpc_security_group_ids = ["${aws_security_group.kubernetes.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
 
     tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "preprod-etcd0-${count.index +1}"
       Department = "Global Operations"
       
@@ -36,8 +36,8 @@ resource "aws_instance" "etcd" {
 
     connection {
      type        = "ssh"
-     user        = "${var.guest_ssh_user}"
-     private_key = file("${var.keypair_name}.pem")
+     user        = "${var.kube_ssh_user}"
+     private_key = file("${var.aws_keypair_name}.pem")
   #   #private_key = file("~/.ssh/terraform")
      host        = self.public_ip
    }

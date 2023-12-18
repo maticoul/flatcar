@@ -1,57 +1,56 @@
-variable "disk_etcd" {
-  description = "Name of the VPC"
-  #default = "30"
-}
-
-variable "disk_master" {
-  description = "Name of the VPC"
-  #default = "30"
-}
-
-variable "disk_worker" {
-  description = "Name of the VPC"
-  #default = "30"
-}
-
-variable "disk_smb" {
-  description = "Name of the VPC"
-  #default = "50"
-}
-
-variable "disk_nfs" {
-  description = "Name of the VPC"
-  #default = "1024"
-}
-
-variable "disk_iics" {
-  description = "Name of the VPC"
-  #default = "250"
-}
+####### VPC Vars #######
 
 variable "vpc_kubernetes" {
-  description = "Name of the VPC"
+  description = "Id of the VPC"
   type = string
-  #default = ""
 }
 
 variable "subnet_public" {
-  description = "Name of the VPC"
-  type = string
-  #default = ""
+  description = "Id of public subnet"
 }
 
-# variable "ami_infra" {
-#   description = "Name of the VPC"
-#   type = string
-#   #default = "ami-03f65b8614a860c29"
-# }
+variable "aws_private_subnet_num" {
+  description = "Number of private subnet"
+  type = string
+}
 
-# variable "ami_iics" {
-#   description = "Name of the VPC"
-#   type = string
-#   #default = "ami-0fae5ac34f36d5963"
-# }
+variable "aws_name_prefix" {
+  description = "VM / hostname prefix for the kubernetes cluster."
+  type = string  
+}
 
+variable "aws_keypair_name" {
+  description = "Name of the KeyPair used for all nodes"
+  type = string 
+}
+
+variable "aws_owner" {
+  description = "Name of owner"
+  type = string
+}
+
+###### Networking setup  ######
+variable "aws_region" {
+  description = "which region will be installed resouces"
+  type = string
+}
+
+variable "aws_azs" {
+ type        = list(string)
+ description = "Availability Zones"
+ 
+}
+
+variable "aws_vpc_cidr" {
+  description = "vpc Subnet CIDR values"
+}
+
+variable "aws_private_subnet_cidr" {
+ type        = list(string)
+ description = "Private Subnet CIDR values"
+}
+
+####### Kubernetes Cluster #######
 variable amis {
   description = "Default AMIs to use for nodes depending on the region"
   type = map
@@ -79,6 +78,59 @@ variable amis {
     us-west-2 = "ami-0acf5f8c6f38cfe9e"
     	}
 }
+
+variable "kube_elb_name" {
+  description = "Name of the ELB for Kubernetes API"
+  type = string
+}
+
+variable "etcd_instance_type" {
+  type = string
+  description = "etcd instances type"
+}
+
+variable "etcd_instance_num" {
+  type = string
+  description = "etcd instances number"
+}
+
+variable "etcd_instance_disk" {
+  type = string
+  description = "etcd instances disk space"
+}
+
+variable "controller_instance_type" {
+  type = string
+  description = "controller instance type"
+}
+
+variable "controller_instance_num" {
+  type = string
+  description = "number of controller instance"
+}
+
+variable "controller_instance_disk" {
+  type = string
+  description = "controller instance disk space"
+}
+
+variable "worker_instance_type" {
+  type = string
+  description = "worker instance type"
+}
+
+variable "worker_instance_num" {
+  type = string
+  description = "number of worker instance"
+}
+
+variable "worker_instance_disk" {
+  type = string
+  description = "worker instance disk space"
+}
+
+
+###### Infra #####
 
 variable amis-ubuntu {
   description = "Default AMIs to use for nodes depending on the region"
@@ -112,113 +164,37 @@ variable amis-windows {
   }
 }
 
-variable amis-flatcar {
-  description = "Default AMIs to use for nodes depending on the region"
-  type = map
-  default = {
-    ap-northeast-1 = "ami-0567c164"
-    ap-southeast-1 = "ami-a1288ec2"
-    cn-north-1 = "ami-d9f226b4"
-    eu-central-1 = "ami-8504fdea"
-    eu-west-1 = "ami-0d77397e"
-    sa-east-1 = "ami-e93da085"
-    us-east-1 = "ami-0e12c4fb31633888a"
-    us-west-1 = "ami-6e165d0e"
-    us-west-2 = "ami-a9d276c9"
-  }
-}
-
-variable "guest_name_prefix" {
-  description = "VM / hostname prefix for the kubernetes cluster."
-  type = string
-  #default = "k8s"
-}
-
-variable "guest_ssh_user" {
+variable "kube_ssh_user" {
   description = "SSH username to connect to the guest VM."
   type = string
-  #default = "core"
 }
 
-variable "guest_ssh_user-infra" {
+variable "smb-instance_ssh_user" {
   description = "SSH username to connect to the guest VM."
   type = string
   #default = "ubuntu"
 }
 
-variable "keypair_name" {
-  description = "Name of the KeyPair used for all nodes"
-  type = string
-  #default = "k8s-apis"
-}
-
-variable "elb_name" {
-  description = "Name of the ELB for Kubernetes API"
-  type = string
-  #default = "apis-lb"
-}
-
-variable "owner" {
-  type = string
-  #default = "Kubernetes"
-}
-
-# Networking setup
-variable "region" {
-  #default = "us-west-2"
-  type = string
-}
-
-variable "azs" {
- type        = list(string)
- description = "Availability Zones"
- #default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
-}
-
-### VARIABLES BELOW MUST NOT BE CHANGED ###
-
-variable "vpc_cidr" {
-  #default = "172.30.0.0/16"
-}
-
-variable "subnet-public_cidr" {
-  type        = string
-  #default = "172.30.11.0/24"
-}
-
-variable "private_subnet_cidr" {
- type        = list(string)
- description = "Private Subnet CIDR values"
- #default     = ["172.30.12.0/24", "172.30.13.0/24", "172.30.14.0/24"]
-}
-
-variable "etcd_instance_type" {
-  type = string
-  #default = "t2.micro"
-}
-variable "controller_instance_type" {
-  type = string
-  #default = "t2.medium"
-}
-variable "worker_instance_type" {
-  type = string
-  #default = "t2.micro"
-}
-
-variable "nfs-instance-type" {
-  description = "VM / hostname prefix for the kubernetes cluster."
-  type = string
-  #default = ""
-}
-
 variable "smb-instance-type" {
   description = "VM / hostname prefix for the kubernetes cluster."
   type = string
-  #default = ""
+   
+}
+
+variable "smb-instance_disk" {
+  description = "VM / hostname prefix for the kubernetes cluster."
+  type = string
+   
 }
 
 variable "windows-instance-type" {
   description = "VM / hostname prefix for the kubernetes cluster."
   type = string
-  #default = ""
+   
+}
+
+variable "windows-instance_disk" {
+  description = "VM / hostname prefix for the kubernetes cluster."
+  type = string
+   
 }

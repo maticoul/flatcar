@@ -38,7 +38,7 @@ resource "aws_iam_policy" "csi_driver_iam_policy" {
 }
 EOF
  tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "csi-driver-iam-policy-k8s"
       Department = "Global Operations"
     }
@@ -62,7 +62,7 @@ resource "aws_iam_role" "csi_driver_iam_role" {
 EOF
 
   tags = {
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
       Name = "csi-driver-iam-role-k8s"
       Department = "Global Operations"
     }

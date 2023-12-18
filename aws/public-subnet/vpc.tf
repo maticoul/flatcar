@@ -3,39 +3,29 @@
 ############
 
 resource "aws_vpc" "kubernetes" {
-  cidr_block = "${var.vpc_cidr}"
+  cidr_block = "${var. aws_vpc_cidr}"
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${var.vpc_name}"
-    Owner = "${var.owner}"
+    Name = "${var.aws_vpc_name}"
+    Owner = "${var.aws_owner}"
+    Department = "Global Operations"
   }
-}
-
-# # DHCP Options are not actually required, being identical to the Default Option Set
-# resource "aws_vpc_dhcp_options" "dns_resolver" {
-#   domain_name = "compute.internal"
-#   domain_name_servers = ["8.8.8.8", "8.8.4.4"]
-
-#   tags = {
-#     Name = "${var.vpc_name}"
-#     Owner = "${var.owner}"
-#   }
-# }
-
-# resource "aws_vpc_dhcp_options_association" "dns_resolver" {
-#   vpc_id ="${aws_vpc.kubernetes.id}"
-#   dhcp_options_id = "${aws_vpc_dhcp_options.dns_resolver.id}"
-# }
+} 
 
 ##########
 # Keypair
 ##########
 
 resource "aws_key_pair" "keypair" {
-  key_name = "${var.keypair_name}"
+  key_name = "${var.aws_keypair_name}"
 #  public_key = "${var.default_keypair_public_key}"
   public_key = tls_private_key.rsa.public_key_openssh
+  tags = {
+    Name = "${var.aws_vpc_name}"
+    Owner = "${var.aws_owner}"
+    Department = "Global Operations"
+  }
 }
 
 resource "tls_private_key" "rsa" {
@@ -45,7 +35,7 @@ resource "tls_private_key" "rsa" {
 
 resource "local_file" "TF-key" {
     content  = tls_private_key.rsa.private_key_pem
-    filename = "${var.keypair_name}.pem"
+    filename = "${var.aws_keypair_name}.pem"
 }
 
 ############
@@ -54,14 +44,16 @@ resource "local_file" "TF-key" {
 
 # Subnet (public)
 resource "aws_subnet" "kubernetes" {
+  count      = var.aws_public_subnet_num
   vpc_id = "${aws_vpc.kubernetes.id}"
-  cidr_block = "${var.subnet_cidr}"
-  availability_zone = "${var.zone}"
+  cidr_block = "${var.aws_public_subnet_cidr[count.index] }"
+  availability_zone = "${var.aws_azs[count.index]}"
   map_public_ip_on_launch = true  # This makes it a private subnet
   
   tags = {
-    Name = "kubernetes"
-    Owner = "${var.owner}"
+    Name = "Kubernetes-Public ${count.index + 1}"
+    Owner = "${var.aws_owner}"
+    Department = "Global Operations"
   }
 }
 
@@ -69,7 +61,8 @@ resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.kubernetes.id}"
   tags = {
     Name = "kubernetes"
-    Owner = "${var.owner}"
+    Department = "Global Operations"
+    Owner = "${var.aws_owner}"
   }
 }
 
@@ -88,12 +81,14 @@ resource "aws_route_table" "kubernetes" {
 
     tags = {
       Name = "kubernetes"
-      Owner = "${var.owner}"
+      Owner = "${var.aws_owner}"
+      Department = "Global Operations"
     }
 }
 
 resource "aws_route_table_association" "kubernetes" {
-  subnet_id = "${aws_subnet.kubernetes.id}"
+  count = var.aws_public_subnet_num
+  subnet_id = element(aws_subnet.kubernetes.*.id, count.index)
   route_table_id = "${aws_route_table.kubernetes.id}"
 }
 
@@ -143,7 +138,7 @@ resource "aws_security_group" "kubernetes" {
     from_port = 0
     to_port = 0
     protocol = "-1"
-    cidr_blocks = ["${var.control_cidr}"]
+    cidr_blocks = ["${var.aws_vpc_cidr}"]
   }
 
 # Allow all traffic from control host IP
@@ -154,7 +149,8 @@ resource "aws_security_group" "kubernetes" {
     security_groups = ["${aws_security_group.kubernetes_api.id}"]
   }
   tags = {
-    Owner = "${var.owner}"
+    Owner = "${var.aws_owner}"
     Name = "kubernetes"
+    Department = "Global Operations"
   }
 }

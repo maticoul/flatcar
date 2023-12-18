@@ -4,7 +4,7 @@
 
 resource "aws_instance" "smb-server" {
     #ami = "${var.amis-ubuntu}"
-    ami = "${lookup(var.amis-ubuntu, var.region)}"
+    ami = "${lookup(var.amis-ubuntu, var.aws_region)}"
     instance_type = "${var.smb-instance-type}"
 
     subnet_id = aws_subnet.kubernetes-private[0].id
@@ -13,23 +13,23 @@ resource "aws_instance" "smb-server" {
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_smb
+    volume_size           = var.smb-instance_disk
     delete_on_termination = true
 
     tags = {
-      Owner = "${var.owner}"
-      Name = "${var.guest_name_prefix}-smb-server"
+      Owner = "${var.aws_owner}"
+      Name = "${var.aws_name_prefix}-smb-server"
       Department = "Global Operations"
     }
   }
 
     availability_zone = "${var.azs[0]}"
     vpc_security_group_ids = ["${aws_security_group.smb.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
     
     tags = {
-      Owner = "${var.owner}"
-      Name = "${var.guest_name_prefix}-smb-server"
+      Owner = "${var.aws_owner}"
+      Name = "${var.aws_name_prefix}-smb-server"
       Department = "Global Operations"
     }
 }
@@ -39,7 +39,7 @@ resource "aws_instance" "smb-server" {
 #########################
 
 resource "aws_instance" "IICS-SERVER" {
-    ami = "${lookup(var.amis-windows, var.region)}"
+    ami = "${lookup(var.amis-windows, var.aws_region)}"
     instance_type = "${var.windows-instance-type}"
 
     subnet_id = aws_subnet.kubernetes-private[0].id
@@ -48,23 +48,23 @@ resource "aws_instance" "IICS-SERVER" {
     
     root_block_device {
     volume_type           = "gp2"
-    volume_size           = var.disk_iics
+    volume_size           = var.windows-instance_disk
     delete_on_termination = true
 
     tags = {
-      Owner = "${var.owner}"
-      Name = "${var.guest_name_prefix}-iics-server"
+      Owner = "${var.aws_owner}"
+      Name = "${var.aws_name_prefix}-iics-server"
       Department = "Global Operations"
     }
   }
 
     availability_zone = "${var.azs[0]}"
     vpc_security_group_ids = ["${aws_security_group.iics.id}"]
-    key_name = "${var.keypair_name}"
+    key_name = "${var.aws_keypair_name}"
 
     tags = {
-      Owner = "${var.owner}"
-      Name = "${var.guest_name_prefix}-IICS-SERVER"
+      Owner = "${var.aws_owner}"
+      Name = "${var.aws_name_prefix}-IICS-SERVER"
       Department = "Global Operations"
     }
 }
